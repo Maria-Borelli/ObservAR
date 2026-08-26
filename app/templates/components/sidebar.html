@@ -1,0 +1,6 @@
+<aside class="sidebar"><div class="brand"><span class="logo">◈</span><div><strong>ObservAR</strong><small>Gestão Ambiental</small></div></div>
+<nav><a href="{{url_for('main.dashboard')}}">⌂ <span>Dashboard</span></a><a href="{{url_for('main.medicoes')}}">▤ <span>Medições</span></a><a href="{{url_for('main.estacoes')}}">⌖ <span>Estações</span></a><a href="{{url_for('main.mapa')}}">◎ <span>Mapa</span></a>
+{% if u.perfil.nivel>=2 %}<a href="{{url_for('main.analises')}}">◇ <span>Análises internas</span></a>{% endif %}
+{% if u.perfil.nivel>=3 %}<div class="nav-label">ADMINISTRAÇÃO</div><a href="{{url_for('importacao.index')}}">⇧ <span>Importação de dados</span></a><a href="{{url_for('main.usuarios')}}">♙ <span>Usuários</span></a><a href="{{url_for('main.auditoria')}}">☷ <span>Auditoria</span></a>{% endif %}</nav>
+<div class="userbox"><div class="avatar">{{u.nome[:1]}}</div><div><strong>{{u.nome}}</strong><small>Nível {{u.perfil.nivel}}</small></div></div>
+<form method="post" action="{{url_for('auth.logout')}}"><input type="hidden" name="_csrf" value="{{csrf_token()}}"><button class="logout">Sair do sistema</button></form></aside>

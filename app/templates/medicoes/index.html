@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% from "components/pagination.html" import pager with context %}
+
+{% block crumb %}
+Medições
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+
+    <div>
+
+        <h1>
+            Dados ambientais
+        </h1>
+
+        <p>
+            Consulta de medições de qualidade do ar
+        </p>
+
+    </div>
+
+</div>
+
+
+<form
+    class="filter"
+    method="get"
+>
+
+    <input
+        name="q"
+        value="{{ request.args.get('q', '') }}"
+        placeholder="Pesquisar por estação..."
+    >
+
+    <input
+        type="hidden"
+        name="per_page"
+        value="{{ per_page }}"
+    >
+
+    <button type="submit">
+        Pesquisar
+    </button>
+
+</form>
+
+
+<div class="card table-card">
+
+    {{ pager(
+        pagination,
+        per_page
+    ) }}
+
+
+    {% if items %}
+
+    <div class="table-responsive">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Data/hora
+                    </th>
+
+                    <th>
+                        Estação
+                    </th>
+
+                    <th>
+                        Município
+                    </th>
+
+                    <th>
+                        Parâmetro
+                    </th>
+
+                    <th>
+                        IQAr
+                    </th>
+
+
+                    {% if u.perfil.nivel >= 2 %}
+
+                    <th>
+                        Concentração
+                    </th>
+
+                    <th>
+                        Flag
+                    </th>
+
+                    <th>
+                        Validação
+                    </th>
+
+                    {% endif %}
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for m in items %}
+
+                <tr>
+
+                    <td>
+                        {{ m.data_hora | data_hora_br }}
+                    </td>
+
+                    <td>
+                        {{ m.estacao.nome if m.estacao else '—' }}
+                    </td>
+
+                    <td>
+                        {{
+                            m.estacao.municipio.nome
+                            if m.estacao
+                            and m.estacao.municipio
+                            else '—'
+                        }}
+                    </td>
+
+                    <td>
+                        {{ m.parametro.nome if m.parametro else '—' }}
+                    </td>
+
+                    <td>
+                        {{
+                            m.iqar | decimal_br
+                            if m.iqar is not none
+                            else '—'
+                        }}
+                    </td>
+
+
+                    {% if u.perfil.nivel >= 2 %}
+
+                    <td>
+                        {{
+                            m.concentracao | decimal_br
+                            if m.concentracao is not none
+                            else '—'
+                        }}
+                    </td>
+
+                    <td>
+                        {{ m.codigo_flag or '—' }}
+                    </td>
+
+                    <td>
+                        {{ m.situacao or '—' }}
+                    </td>
+
+                    {% endif %}
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        Nenhuma medição encontrada.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

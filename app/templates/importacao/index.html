@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}ObservAR | Importação de dados{% endblock %}
+{% block crumb %}Importação de dados{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <div>
+        <h1>Importação de dados</h1>
+
+        <p>
+            Envie arquivos CSV da base MonitorAr para atualizar os dados do ObservAR.
+        </p>
+    </div>
+</div>
+
+
+<section class="card import-main-card">
+
+    <h3>Enviar arquivo CSV</h3>
+
+    <form
+        id="import-form"
+        enctype="multipart/form-data"
+        novalidate
+    >
+        <input
+            type="hidden"
+            name="_csrf"
+            value="{{ csrf_token() }}"
+        >
+
+                <label
+            class="upload-box"
+            for="arquivo"
+        >
+            <span
+                class="upload-icon"
+                aria-hidden="true"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 20H4m8-3V6m0 11 3-3m-3 3-3-3"
+                    />
+                </svg>
+            </span>
+
+            <strong>
+                Escolher arquivo CSV
+            </strong>
+
+            <small>
+                Máximo {{ max_mb }} MB
+                • processamento em lotes de
+                {{ chunk_size | numero_br }}
+            </small>
+        </label>
+
+        <input
+            id="arquivo"
+            class="upload-input"
+            type="file"
+            name="arquivo"
+            accept=".csv,text/csv"
+        >
+
+        <div
+            id="arquivo-nome"
+            class="upload-file-name"
+        >
+            Nenhum arquivo selecionado.
+        </div>
+
+        <button
+            id="import-submit"
+            class="primary import-submit"
+            type="submit"
+            disabled
+        >
+            Iniciar importação
+        </button>
+    </form>
+
+
+    <div
+        id="import-status"
+        class="import-status"
+        aria-live="polite"
+        hidden
+    >
+        <div
+            class="loading-spinner"
+            aria-hidden="true"
+        ></div>
+
+        <div class="import-status-content">
+
+            <strong id="import-status-title">
+                Preparando importação...
+            </strong>
+
+            <p id="import-status-message">
+                Aguarde enquanto o arquivo é validado.
+            </p>
+
+        </div>
+
+        <button
+            id="cancel-import"
+            class="import-cancel-btn"
+            type="button"
+            hidden
+        >
+            Cancelar importação
+        </button>
+
+    </div>
+
+
+    <div
+        id="cancel-confirmation"
+        class="cancel-confirmation"
+        hidden
+    >
+        <strong>
+            Deseja cancelar esta importação?
+        </strong>
+
+        <p>
+            Todos os dados adicionados por este envio serão removidos.
+        </p>
+
+        <div class="cancel-actions">
+
+            <button
+                id="continue-import"
+                class="cancel-keep-btn"
+                type="button"
+            >
+                Continuar importação
+            </button>
+
+            <button
+                id="confirm-cancel"
+                class="cancel-remove-btn"
+                type="button"
+            >
+                Cancelar e remover dados
+            </button>
+
+        </div>
+    </div>
+
+
+    <div
+        id="import-result"
+        class="import-result"
+        hidden
+    >
+        <h3>Resultado</h3>
+
+        <dl class="result-grid">
+
+            <div>
+                <dt>Linhas processadas</dt>
+                <dd id="result-processadas">0</dd>
+            </div>
+
+            <div>
+                <dt>Registros importados</dt>
+                <dd id="result-importados">0</dd>
+            </div>
+
+            <div>
+                <dt>Duplicados ignorados</dt>
+                <dd id="result-duplicados">0</dd>
+            </div>
+
+            <div>
+                <dt>Conflitos</dt>
+                <dd id="result-conflitos">0</dd>
+            </div>
+
+            <div>
+                <dt>Erros</dt>
+                <dd id="result-erros">0</dd>
+            </div>
+
+            <div>
+                <dt>Lotes processados</dt>
+                <dd id="result-lotes">0</dd>
+            </div>
+
+            <div>
+                <dt>Registros removidos</dt>
+                <dd id="result-removidos">0</dd>
+            </div>
+
+        </dl>
+    </div>
+
+</section>
+
+
+<section class="card table-card import-history">
+
+    <h3>
+        Histórico de importações
+    </h3>
+
+    {% if historico %}
+
+    <div class="table-responsive">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Início</th>
+                    <th>Arquivo</th>
+                    <th>Responsável</th>
+                    <th>Status</th>
+                    <th>Processadas</th>
+                    <th>Importadas</th>
+                    <th>Duplicados</th>
+                    <th>Conflitos</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in historico %}
+
+                <tr>
+
+                    <td>
+                        {{ item.iniciada_em | data_hora_br }}
+                    </td>
+
+                    <td>
+                        {{ item.nome_arquivo }}
+                    </td>
+
+                    <td>
+                        {{
+                            item.usuario.nome
+                            if item.usuario
+                            else "Importação antiga/script"
+                        }}
+                    </td>
+
+                    <td>
+                        <span class="status-tag">
+                            {{ item.status }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ item.linhas_processadas | numero_br }}
+                    </td>
+
+                    <td>
+                        {{ item.registros_importados | numero_br }}
+                    </td>
+
+                    <td>
+                        {{ item.duplicados | numero_br }}
+                    </td>
+
+                    <td>
+                        {{ item.conflitos | numero_br }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        Nenhuma importação registrada.
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script
+    src="{{ url_for('static', filename='js/importacao.js') }}?v=3"
+></script>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+# Ambiente virtual
+.venv/
+.venv-*/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Pytest
+.pytest_cache/
+
+# Flask / instance
+instance/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# CSVs locais
+data/
+*.csv
+
+# Banco local
+*.db
+*.sqlite
+*.sqlite3
+
+# Cobertura
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/

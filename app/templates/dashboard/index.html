@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block crumb %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <div>
+        <h1>Dashboard ambiental</h1>
+        <p>Visão geral dos dados ambientais importados do MonitorAr.</p>
+    </div>
+</div>
+
+<div class="stats">
+
+    <div class="card stat">
+        <span class="stat-icon">⌖</span>
+
+        <strong>
+            {{ stats.estacoes | numero_br }}
+        </strong>
+
+        <small>Estações</small>
+    </div>
+
+    <div class="card stat">
+        <span class="stat-icon">◎</span>
+
+        <strong>
+            {{ stats.municipios | numero_br }}
+        </strong>
+
+        <small>Municípios</small>
+    </div>
+
+    <div class="card stat">
+        <span class="stat-icon">▤</span>
+
+        <strong>
+            {{ stats.medicoes | numero_br }}
+        </strong>
+
+        <small>Medições</small>
+    </div>
+
+
+
+</div>
+
+
+<div class="grid2">
+
+    <div class="card">
+
+        <h3>Medições recentes</h3>
+
+        {% if not banco_ok %}
+
+            <div class="empty">
+                Não foi possível consultar as medições no momento.
+            </div>
+
+        {% elif recent %}
+
+            <div class="table-responsive">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Estação</th>
+                            <th>Parâmetro</th>
+
+                            {% if u.perfil.nivel >= 2 %}
+                                <th>Concentração</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for m in recent %}
+
+                            <tr>
+
+                                <td>
+                                    {{ m.data_hora | data_hora_br }}
+                                </td>
+
+                                <td>
+
+                                    {% if m.estacao %}
+
+                                        <strong>
+                                            {{ m.estacao.nome }}
+                                        </strong>
+
+                                        {% if m.estacao.municipio %}
+
+                                            <small class="table-subtext">
+                                                Município:
+                                                {{ m.estacao.municipio.nome }}
+                                            </small>
+
+                                        {% else %}
+
+                                            <small class="table-subtext">
+                                                Município não informado
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        Estação não informada
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if m.parametro %}
+
+                                        <span
+                                            title="{{ m.parametro.nome }}"
+                                        >
+                                            {{ m.parametro.nome }}
+                                        </span>
+
+                                        {% if
+                                            m.parametro.codigo_normalizado
+                                            and
+                                            m.parametro.codigo_normalizado
+                                            != m.parametro.nome
+                                        %}
+
+                                            <small class="table-subtext">
+                                                {{ m.parametro.codigo_normalizado }}
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        Não informado
+
+                                    {% endif %}
+
+                                </td>
+
+                                {% if u.perfil.nivel >= 2 %}
+
+                                    <td>
+
+                                        {% if m.concentracao is not none %}
+
+                                            {{ m.concentracao | decimal_br }}
+
+                                        {% else %}
+
+                                            Não informada
+
+                                        {% endif %}
+
+                                    </td>
+
+                                {% endif %}
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+
+                Nenhuma medição encontrada.
+
+                <small>
+                    Importe uma base para visualizar
+                    os dados ambientais.
+                </small>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Nível de acesso</h3>
+
+        <div class="level-badge">
+            Nível {{ u.perfil.nivel }}
+        </div>
+
+        <p>
+            {{ acesso_texto }}
+        </p>
+
+
+        <div class="dashboard-chart">
+
+            <h3>
+                Medições por estação
+            </h3>
+
+            {% if not banco_ok %}
+
+                <div class="empty compact">
+                    Gráfico indisponível no momento.
+                </div>
+
+            {% elif stats.medicoes == 0 %}
+
+                <div class="empty compact">
+                    Importe uma base para visualizar
+                    os gráficos.
+                </div>
+
+            {% elif chart_data %}
+
+                <div class="bar-chart">
+
+                    {% set maior =
+                        chart_data
+                        | map(attribute="total")
+                        | max
+                    %}
+
+                    {% for item in chart_data %}
+
+                        <div class="bar-item">
+
+                            <div class="bar-header">
+
+                                <span
+                                    class="bar-label"
+                                    title="{{ item.label }}"
+                                >
+                                    {{ item.label }}
+                                </span>
+
+                                <strong>
+                                    {{ item.total | numero_br }}
+                                </strong>
+
+                            </div>
+
+                            <progress
+                                class="bar-progress"
+                                value="{{ item.total }}"
+                                max="{{ maior }}"
+                            >
+                                {{ item.total }}
+                            </progress>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty compact">
+                    Não há informações suficientes
+                    para gerar o gráfico.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

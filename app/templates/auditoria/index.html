@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% from "components/pagination.html" import pager with context %}
+
+{% block crumb %}
+Auditoria
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+
+    <div>
+
+        <h1>
+            Auditoria
+        </h1>
+
+        <p>
+            Autenticações e acessos protegidos
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="grid2">
+
+
+    <div class="card table-card">
+
+        <h3>
+            Autenticação
+        </h3>
+
+
+        {{ pager(
+            auth_pagination,
+            auth_per_page,
+            "auth_page",
+            "auth_per_page"
+        ) }}
+
+
+        {% if auth %}
+
+        <div class="table-responsive">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Quando
+                        </th>
+
+                        <th>
+                            Identificador
+                        </th>
+
+                        <th>
+                            Etapa
+                        </th>
+
+                        <th>
+                            Resultado
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for x in auth %}
+
+                    <tr>
+
+                        <td>
+                            {{ x.criado_em | data_hora_br }}
+                        </td>
+
+                        <td>
+                            {{ x.identificador }}
+                        </td>
+
+                        <td>
+                            {{ x.etapa }}
+                        </td>
+
+                        <td>
+                            {{
+                                'Aprovado'
+                                if x.sucesso
+                                else 'Reprovado'
+                            }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            Sem logs.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <h3>
+            Acessos
+        </h3>
+
+
+        {{ pager(
+            access_pagination,
+            access_per_page,
+            "access_page",
+            "access_per_page"
+        ) }}
+
+
+        {% if access %}
+
+        <div class="table-responsive">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Quando
+                        </th>
+
+                        <th>
+                            Rota
+                        </th>
+
+                        <th>
+                            Resultado
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for x in access %}
+
+                    <tr>
+
+                        <td>
+                            {{ x.criado_em | data_hora_br }}
+                        </td>
+
+                        <td>
+                            {{ x.rota }}
+                        </td>
+
+                        <td>
+                            {{
+                                'Permitido'
+                                if x.permitido
+                                else 'Negado'
+                            }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            Sem logs.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}
+        ObservAR | Gestão Ambiental
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}?v=2"
+    >
+
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body>
+
+    {% if u %}
+
+        <div class="app-shell">
+
+            {% include 'components/sidebar.html' %}
+
+            <main class="main">
+
+                <header class="topbar">
+
+                    <span>
+                        ObservAR
+                        <b>/</b>
+
+                        {% block crumb %}
+                        Painel
+                        {% endblock %}
+                    </span>
+
+                </header>
+
+                <section class="content">
+
+                    {% block content %}
+                    {% endblock %}
+
+                </section>
+
+            </main>
+
+        </div>
+
+    {% else %}
+
+        {% block public %}
+        {% endblock %}
+
+    {% endif %}
+
+
+    <script>
+        window.CSRF = "{{ csrf_token() }}";
+
+        document.addEventListener("change", function (event) {
+            if (!event.target.matches(".per-page-select")) return;
+            const url = new URL(window.location.href);
+            url.searchParams.set(event.target.dataset.param, event.target.value);
+            const pageParam = event.target.dataset.param.replace("per_page", "page");
+            url.searchParams.set(pageParam, "1");
+            window.location.assign(url.toString());
+        });
+
+        document.addEventListener("submit", function (event) {
+            const form = event.target;
+            if (!form.matches(".filter")) return;
+            const button = form.querySelector("button[type='submit'], button:not([type])");
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Carregando...";
+            }
+        });
+    </script>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+
+</html>

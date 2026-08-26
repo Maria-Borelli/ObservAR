@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "components/pagination.html" import pager with context %}
+
+{% block crumb %}
+Análises internas
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+
+    <div>
+
+        <h1>
+            Análises internas
+        </h1>
+
+        <p>
+            Conteúdo institucional produzido pela aplicação —
+            não faz parte da base oficial MonitorAr.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    {{ pager(
+        pagination,
+        per_page
+    ) }}
+
+
+    {% if items %}
+
+        {% for x in items %}
+
+        <article>
+
+            <b>
+                Prioridade:
+                {{ x.prioridade or '—' }}
+            </b>
+
+            <p>
+                {{ x.parecer or 'Sem parecer.' }}
+            </p>
+
+        </article>
+
+        {% endfor %}
+
+    {% else %}
+
+    <div class="empty">
+        Nenhuma análise interna cadastrada.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

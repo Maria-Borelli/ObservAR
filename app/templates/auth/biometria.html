@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block public %}
+<div class="login-bg">
+    <div class="login-wrap">
+
+        <div class="login-logo">
+            <div class="logo big">◈</div>
+
+            <h1>ObservAR</h1>
+
+            <p>
+                Verificação de identidade
+            </p>
+        </div>
+
+        <div class="login-card">
+
+            <div class="steps">
+                <em class="done">✓</em>
+                <span>Credenciais</span>
+
+                <i></i>
+
+                <b>2</b>
+                <span>Biometria facial</span>
+            </div>
+
+            <h2>
+                Autenticação facial
+            </h2>
+
+            <p class="muted">
+                Centralize o rosto,
+                mantenha boa iluminação
+                e olhe diretamente para
+                a câmera.
+            </p>
+
+            {% if usuario %}
+            <p class="muted">
+                Usuário:
+                <strong>
+                    {{ usuario.nome }}
+                </strong>
+            </p>
+            {% endif %}
+
+            <div class="camera-frame">
+
+                <video
+                    id="video"
+                    autoplay
+                    playsinline
+                ></video>
+
+                <div
+                    class="face-guide"
+                ></div>
+
+                <div
+                    class="scan-line"
+                ></div>
+
+            </div>
+
+            <canvas
+                id="canvas"
+                hidden
+            ></canvas>
+
+            <div
+                id="bio-msg"
+                class="alert info"
+            >
+                A câmera ainda não foi iniciada.
+            </div>
+
+            <!-- IMPORTANTE:
+                 type="button" impede POST em /biometria -->
+            <button
+                type="button"
+                id="verify"
+                class="primary"
+            >
+                Iniciar câmera e verificar
+            </button>
+
+            <a
+                class="back"
+                href="{{ url_for('auth.login') }}"
+            >
+                ← Voltar às credenciais
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% include "components/loading_overlay.html" %}
+
+{% block scripts %}
+<script
+    src="{{ url_for(
+        'static',
+        filename='js/camera.js'
+    ) }}"
+></script>
+{% endblock %}

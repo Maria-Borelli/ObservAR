@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block public %}
+<div class="login-bg">
+    <div class="login-wrap">
+
+        <div class="login-logo">
+            <div class="logo big">◈</div>
+
+            <h1>ObservAR</h1>
+
+            <p>
+                Cadastro biométrico inicial
+            </p>
+        </div>
+
+        <div class="login-card">
+
+            <h2>
+                Cadastrar rosto
+            </h2>
+
+            <p class="muted">
+                Administrador:
+                <strong>
+                    {{ usuario.nome }}
+                </strong>
+            </p>
+
+            <p class="muted">
+                Centralize o rosto,
+                mantenha boa iluminação
+                e olhe diretamente para
+                a câmera.
+            </p>
+
+            <div class="camera-frame">
+
+                <video
+                    id="video"
+                    autoplay
+                    playsinline
+                ></video>
+
+                <div
+                    class="face-guide"
+                ></div>
+
+                <div
+                    class="scan-line"
+                ></div>
+
+            </div>
+
+            <canvas
+                id="canvas"
+                hidden
+            ></canvas>
+
+            <div
+                id="bio-msg"
+                class="alert info"
+            >
+                A câmera ainda não foi iniciada.
+            </div>
+
+            <button
+                id="setup-enroll"
+                class="primary"
+            >
+                Iniciar câmera e cadastrar
+            </button>
+
+            <a
+                class="back"
+                href="{{ url_for('auth.login') }}"
+            >
+                ← Cancelar
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for(
+        'static',
+        filename='js/camera.js'
+    ) }}"
+></script>
+{% endblock %}

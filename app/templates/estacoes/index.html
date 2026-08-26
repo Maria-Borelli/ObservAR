@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "components/pagination.html" import pager with context %}
+
+{% block crumb %}
+Estações
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+
+    <div>
+
+        <h1>
+            Estações de monitoramento
+        </h1>
+
+        <p>
+            Estações cadastradas a partir da base importada
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card table-card">
+
+    {{ pager(
+        pagination,
+        per_page
+    ) }}
+
+
+    {% if items %}
+
+    <div class="table-responsive">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Estação
+                    </th>
+
+                    <th>
+                        Município
+                    </th>
+
+                    <th>
+                        Código
+                    </th>
+
+                    <th>
+                        Coordenadas
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for s in items %}
+
+                <tr>
+
+                    <td>
+                        <b>
+                            {{ s.nome }}
+                        </b>
+                    </td>
+
+                    <td>
+                        {{
+                            s.municipio.nome
+                            if s.municipio
+                            else '—'
+                        }}
+                    </td>
+
+                    <td>
+                        {{ s.codigo or '—' }}
+                    </td>
+
+                    <td>
+                        {{ s.latitude or '—' }},
+                        {{ s.longitude or '—' }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        Nenhuma estação encontrada.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

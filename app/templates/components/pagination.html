@@ -1,0 +1,303 @@
+{% macro pager(
+    pagination,
+    per_page,
+    page_param="page",
+    per_page_param="per_page"
+) %}
+
+{% if pagination and pagination.pages > 1 %}
+
+<nav
+    class="pagination"
+    aria-label="Navegação entre páginas"
+>
+
+    <div class="pagination-size">
+
+        <label>
+            Itens por página
+
+            <select
+                class="per-page-select"
+                data-param="{{ per_page_param }}"
+                aria-label="Itens por página"
+            >
+
+                {% for size in (25, 50, 100) %}
+
+                    <option
+                        value="{{ size }}"
+                        {% if per_page == size %}selected{% endif %}
+                    >
+                        {{ size }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </label>
+
+    </div>
+
+
+    <div class="pagination-controls">
+
+        {% set current = pagination.page %}
+        {% set last = pagination.pages %}
+
+
+        {% if pagination.has_prev %}
+
+            <a
+                class="pagination-arrow"
+                href="{{ pagination_url(pagination.prev_num) }}"
+                aria-label="Página anterior"
+                title="Página anterior"
+            >
+                ‹
+            </a>
+
+        {% else %}
+
+            <span
+                class="pagination-arrow disabled"
+                aria-label="Página anterior"
+                aria-disabled="true"
+                title="Página anterior"
+            >
+                ‹
+            </span>
+
+        {% endif %}
+
+
+        {% if last <= 7 %}
+
+            {% for number in range(1, last + 1) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ pagination_url(number) }}"
+                        {% if number == 1 %}
+                            aria-label="Ir para a primeira página"
+                        {% elif number == last %}
+                            aria-label="Ir para a última página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+
+        {% elif current <= 4 %}
+
+            {% for number in range(1, 6) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ pagination_url(number) }}"
+                        {% if number == 1 %}
+                            aria-label="Ir para a primeira página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            <a
+                class="pagination-link"
+                href="{{ pagination_url(last) }}"
+                aria-label="Ir para a última página"
+            >
+                {{ last | numero_br }}
+            </a>
+
+
+
+        {% elif current >= last - 3 %}
+
+            <a
+                class="pagination-link"
+                href="{{ pagination_url(1) }}"
+                aria-label="Ir para a primeira página"
+            >
+                1
+            </a>
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            {% for number in range(last - 4, last + 1) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ pagination_url(number) }}"
+                        {% if number == last %}
+                            aria-label="Ir para a última página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+        {% else %}
+
+            <a
+                class="pagination-link"
+                href="{{ pagination_url(1) }}"
+                aria-label="Ir para a primeira página"
+            >
+                1
+            </a>
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            {% for number in range(
+                current - 1,
+                current + 2
+            ) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ pagination_url(number) }}"
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            <a
+                class="pagination-link"
+                href="{{ pagination_url(last) }}"
+                aria-label="Ir para a última página"
+            >
+                {{ last | numero_br }}
+            </a>
+
+        {% endif %}
+
+
+
+        {% if pagination.has_next %}
+
+            <a
+                class="pagination-arrow"
+                href="{{ pagination_url(pagination.next_num) }}"
+                aria-label="Próxima página"
+                title="Próxima página"
+            >
+                ›
+            </a>
+
+        {% else %}
+
+            <span
+                class="pagination-arrow disabled"
+                aria-label="Próxima página"
+                aria-disabled="true"
+                title="Próxima página"
+            >
+                ›
+            </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="pagination-info">Página {{ pagination.page | numero_br }} de {{ pagination.pages | numero_br }}</div>
+
+</nav>
+
+{% endif %}
+
+{% endmacro %}

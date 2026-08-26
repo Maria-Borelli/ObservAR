@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block crumb %}
+Cadastro biométrico
+{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>
+            Cadastro biométrico
+        </h1>
+        <p>
+            {{target.nome}} · {{target.login}}
+        </p>
+    </div>
+</div>
+
+<div class="card bio-card">
+    <p>
+        Apenas a representação biométrica extraída é persistida; a foto capturada não é armazenada pela aplicação.
+    </p>
+
+    <div class="camera-frame">
+        <video id="video" autoplay playsinline>
+        </video>
+        <div class="face-guide">
+        </div>
+    </div>
+
+    <canvas id="canvas" hidden>
+    </canvas>
+
+    <div id="bio-msg" class="alert info">
+        Aguardando câmera.
+    </div>
+
+    <button id="enroll" class="primary" data-url="{{url_for('main.save_bio',uid=target.id)}}">
+        Capturar e cadastrar
+    </button>
+</div>
+
+{% endblock %}
+{% block scripts %}
+
+<script src="{{url_for('static',filename='js/camera.js')}}">
+</script>
+
+{% endblock %}

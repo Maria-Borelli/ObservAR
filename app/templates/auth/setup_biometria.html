@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block public %}
+<div class="login-bg">
+    <div class="login-wrap">
+
+        <div class="login-logo">
+            <div class="logo big">◈</div>
+
+            <h1>ObservAR</h1>
+
+            <p>
+                Configuração biométrica inicial
+            </p>
+        </div>
+
+        <div class="login-card">
+
+            <h2>
+                Cadastro inicial do administrador
+            </h2>
+
+            <p class="muted">
+                Informe as credenciais de um
+                usuário nível 3 que ainda não
+                possui biometria cadastrada.
+            </p>
+
+            {% if error %}
+            <div class="alert danger">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post">
+
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="{{ csrf_token() }}"
+                >
+
+                <label>
+                    Usuário ou e-mail
+
+                    <input
+                        name="identifier"
+                        autocomplete="username"
+                        required
+                        placeholder="admin"
+                    >
+                </label>
+
+                <label>
+                    Senha
+
+                    <input
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                        placeholder="••••••••"
+                    >
+                </label>
+
+                <button class="primary">
+                    Continuar para câmera →
+                </button>
+
+            </form>
+
+            <div class="security-note">
+                Esta rota é destinada somente
+                ao cadastro biométrico inicial.
+            </div>
+
+            <a
+                class="back"
+                href="{{ url_for('auth.login') }}"
+            >
+                ← Voltar ao login
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
