@@ -174,6 +174,20 @@ def verificar():
             error="Usuário não encontrado.",
         ), 404
 
+    if not usuario.ativo:
+        session.clear()
+        auth_log(
+            usuario.id,
+            usuario.login,
+            "biometria",
+            False,
+            "Conta inativa",
+        )
+        return jsonify(
+            ok=False,
+            error="Conta de usuário inativa.",
+        ), 403
+
     biometria = (
         BiometriaFacial.query
         .filter_by(

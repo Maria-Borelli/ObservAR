@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block crumb %}Usuários · {{ "Editar" if target else "Novo" }}{% endblock %}
+{% block content %}
+<div class="page-head">
+<div><h1>{{ "Editar usuário" if target else "Novo usuário" }}</h1><p>Conta pessoal e nível de permissão</p></div>
+<a class="linkbtn secondary-btn" href="{{ url_for('main.usuarios') }}">Voltar</a>
+</div>
+{% if success %}<div class="alert info">{{ success }}</div>{% endif %}
+{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+<div class="card user-form-card">
+<form method="post">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+<div class="user-form-grid">
+<label>Nome completo
+<input name="nome" maxlength="120" required value="{{ request.form.get('nome', target.nome if target else '') }}">
+</label>
+<label>Login
+<input name="login" maxlength="80" required value="{{ request.form.get('login', target.login if target else '') }}">
+</label>
+<label>E-mail
+<input type="email" name="email" maxlength="160" value="{{ request.form.get('email', target.email if target and target.email else '') }}">
+</label>
+<label>Nível de permissão
+<select name="perfil_id" required>
+<option value="">Selecione</option>
+{% for perfil in perfis %}
+<option value="{{ perfil.id }}" {% if request.form.get('perfil_id', target.perfil_id if target else '')|string == perfil.id|string %}selected{% endif %}>{{ perfil.nome }} — Nível {{ perfil.nivel }}</option>
+{% endfor %}
+</select>
+</label>
+<label>Senha {% if target %}<span class="table-subtext">Deixe em branco para manter a atual.</span>{% endif %}
+<input type="password" name="senha" {% if not target %}required{% endif %} minlength="8" autocomplete="new-password">
+</label>
+<label class="user-active-field">
+<input type="checkbox" name="ativo" {% if request.form %}{% if request.form.get('ativo') == 'on' %}checked{% endif %}{% elif not target or target.ativo %}checked{% endif %}>
+Conta ativa
+</label>
+</div>
+<button type="submit" class="primary">{{ "Salvar alterações" if target else "Criar usuário" }}</button>
+</form>
+{% if target %}
+<div class="user-form-footer">
+<p><strong>Biometria facial:</strong> {{ "cadastrada" if target.biometrias|selectattr("ativa")|list else "pendente" }}.</p>
+<a class="linkbtn" href="{{ url_for('main.cadastro_bio', uid=target.id) }}">{{ "Substituir biometria" if target.biometrias|selectattr("ativa")|list else "Cadastrar biometria" }}</a>
+</div>
+{% endif %}
+</div>
+{% endblock %}

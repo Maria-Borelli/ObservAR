@@ -1,98 +1,51 @@
 {% extends "base.html" %}
 {% from "components/pagination.html" import pager with context %}
-
-{% block crumb %}
-Usuários
-{% endblock %}
-
+{% block crumb %}Usuários{% endblock %}
 {% block content %}
-
 <div class="page-head">
     <div>
         <h1>Administração de usuários</h1>
-        <p>Perfis e referências biométricas</p>
+        <p>Contas pessoais, níveis de permissão e biometria facial</p>
     </div>
+    <a class="linkbtn" href="{{ url_for('main.usuario_novo') }}">Novo usuário</a>
 </div>
+
+{% if success %}<div class="alert info">{{ success }}</div>{% endif %}
+{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
 
 <div class="card table-card">
-
-    {% if items %}
-
-        <div class="table-responsive">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Login</th>
-                        <th>Nível</th>
-                        <th>Status</th>
-                        <th>Biometria</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for x in items %}
-
-                        <tr>
-
-                            <td>
-                                <strong>
-                                    {{ x.nome }}
-                                </strong>
-                            </td>
-
-                            <td>
-                                {{ x.login }}
-                            </td>
-
-                            <td>
-                                Nível {{ x.perfil.nivel }}
-                            </td>
-
-                            <td>
-                                {{ "Ativo" if x.ativo else "Inativo" }}
-                            </td>
-
-                            <td>
-                                {{ "Cadastrada" if x.biometrias else "Pendente" }}
-                            </td>
-
-                            <td>
-                                <a
-                                    class="linkbtn"
-                                    href="{{ url_for(
-                                        'main.cadastro_bio',
-                                        uid=x.id
-                                    ) }}"
-                                >
-                                    Cadastrar face
-                                </a>
-                            </td>
-
-                        </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    {% else %}
-
-        <div class="empty">
-            Nenhum usuário encontrado.
-        </div>
-
-    {% endif %}
-
-    {{ pager(pagination, per_page) }}
-
+{% if items %}
+<div class="table-responsive">
+<table>
+<thead><tr><th>Nome do usuário</th><th>Login</th><th>Nível de permissão</th><th>Situação</th><th>Biometria</th><th>Ações</th></tr></thead>
+<tbody>
+{% for x in items %}
+<tr>
+<td><strong>{{ x.nome }}</strong>{% if x.email %}<span class="table-subtext">{{ x.email }}</span>{% endif %}</td>
+<td>{{ x.login }}</td>
+<td>{{ x.perfil.nome }} <span class="table-subtext">Nível {{ x.perfil.nivel }}</span></td>
+<td>{{ "Ativo" if x.ativo else "Inativo" }}</td>
+<td>{{ "Cadastrada" if x.biometrias|selectattr("ativa")|list else "Pendente" }}</td>
+<td>
+<div class="user-actions">
+<a class="linkbtn" href="{{ url_for('main.usuario_editar', uid=x.id) }}">Editar</a>
+<a class="linkbtn secondary-btn" href="{{ url_for('main.cadastro_bio', uid=x.id) }}">Biometria</a>
+<form method="post" action="{{ url_for('main.usuario_status', uid=x.id) }}">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+<button type="submit" class="linkbtn secondary-btn">{{ "Desativar" if x.ativo else "Ativar" }}</button>
+</form>
+<form method="post" action="{{ url_for('main.usuario_excluir', uid=x.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ x.nome|e }}? Esta ação não pode ser desfeita.');">
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+<button type="submit" class="linkbtn danger-btn">Excluir</button>
+</form>
 </div>
-
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}<div class="empty">Nenhum usuário encontrado.</div>{% endif %}
+{{ pager(pagination, per_page) }}
+</div>
 {% endblock %}

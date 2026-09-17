@@ -73,6 +73,19 @@ class Usuario(db.Model):
         nullable=False,
     )
 
+    criado_em = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    atualizado_em = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
     perfil = db.relationship(
         "Perfil",
         backref="usuarios",

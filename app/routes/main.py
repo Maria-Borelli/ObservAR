@@ -4,8 +4,10 @@ from flask import (
     Blueprint,
     current_app,
     jsonify,
+    redirect,
     render_template,
     request,
+    url_for,
 )
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -18,6 +20,7 @@ from app.models import (
     LogAcesso,
     LogAutenticacao,
     MedicaoQualidadeAr,
+    Perfil,
     Usuario,
     db,
 )
@@ -222,7 +225,198 @@ def usuarios():
         items=pagination.items,
         pagination=pagination,
         per_page=per_page,
+        perfis=Perfil.query.order_by(Perfil.nivel.asc()).all(),
+        success=request.args.get("success"),
+        error=request.args.get("error"),
     )
+
+
+def _perfil_por_id(perfil_id):
+    try:
+        return Perfil.query.filter_by(id=int(perfil_id)).first()
+    except (TypeError, ValueError):
+        return None
+
+
+def _ultimo_admin_ativo(usuario):
+    return (
+        usuario.ativo
+        and usuario.perfil
+        and usuario.perfil.nivel == 3
+        and Usuario.query.join(Perfil)
+        .filter(Usuario.ativo.is_(True), Perfil.nivel == 3)
+        .count() <= 1
+    )
+
+
+def _usuario_tem_referencias(usuario_id):
+    from app.models import HistoricoImportacao
+    return (
+        LogAutenticacao.query.filter_by(usuario_id=usuario_id).first() is not None
+        or LogAcesso.query.filter_by(usuario_id=usuario_id).first() is not None
+        or HistoricoImportacao.query.filter(
+            (HistoricoImportacao.usuario_id == usuario_id)
+            | (HistoricoImportacao.cancelado_por_usuario_id == usuario_id)
+        ).first() is not None
+    )
+
+
+@bp.route("/usuarios/novo", methods=["GET", "POST"])
+@require_level(3)
+def usuario_novo():
+    perfis = Perfil.query.order_by(Perfil.nivel.asc()).all()
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        login = request.form.get("login", "").strip()
+        email = request.form.get("email", "").strip() or None
+        senha = request.form.get("senha", "")
+        perfil = _perfil_por_id(request.form.get("perfil_id"))
+
+        error = None
+        if not nome or not login or not senha or not perfil:
+            error = "Preencha nome, login, senha e nível de permissão."
+        elif Usuario.query.filter_by(login=login).first():
+            error = "Este login já está em uso."
+        elif email and Usuario.query.filter_by(email=email).first():
+            error = "Este e-mail já está em uso."
+
+        if error:
+            return render_template(
+                "usuarios/form.html",
+                u=current_user(),
+                target=None,
+                perfis=perfis,
+                error=error,
+            ), 400
+
+        usuario = Usuario(
+            nome=nome,
+            login=login,
+            email=email,
+            perfil=perfil,
+            ativo=request.form.get("ativo") == "on",
+        )
+        usuario.set_password(senha)
+        db.session.add(usuario)
+        db.session.commit()
+        return redirect(url_for(
+            "main.usuario_editar",
+            uid=usuario.id,
+            success="Usuário criado com sucesso. Agora você pode cadastrar a biometria facial.",
+        ))
+
+    return render_template(
+        "usuarios/form.html",
+        u=current_user(),
+        target=None,
+        perfis=perfis,
+    )
+
+
+@bp.route("/usuarios/<int:uid>/editar", methods=["GET", "POST"])
+@require_level(3)
+def usuario_editar(uid):
+    usuario = Usuario.query.get_or_404(uid)
+    perfis = Perfil.query.order_by(Perfil.nivel.asc()).all()
+
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        login = request.form.get("login", "").strip()
+        email = request.form.get("email", "").strip() or None
+        senha = request.form.get("senha", "")
+        perfil = _perfil_por_id(request.form.get("perfil_id"))
+        ativo = request.form.get("ativo") == "on"
+
+        error = None
+        if not nome or not login or not perfil:
+            error = "Preencha nome, login e nível de permissão."
+        elif Usuario.query.filter(
+            Usuario.login == login, Usuario.id != usuario.id
+        ).first():
+            error = "Este login já está em uso."
+        elif email and Usuario.query.filter(
+            Usuario.email == email, Usuario.id != usuario.id
+        ).first():
+            error = "Este e-mail já está em uso."
+        elif _ultimo_admin_ativo(usuario) and (
+            perfil.nivel != 3 or not ativo
+        ):
+            error = "Não é possível rebaixar ou desativar o último administrador ativo."
+
+        if error:
+            return render_template(
+                "usuarios/form.html",
+                u=current_user(),
+                target=usuario,
+                perfis=perfis,
+                error=error,
+            ), 400
+
+        usuario.nome = nome
+        usuario.login = login
+        usuario.email = email
+        usuario.perfil = perfil
+        usuario.ativo = ativo
+        if senha:
+            usuario.set_password(senha)
+        db.session.commit()
+        return redirect(url_for(
+            "main.usuario_editar",
+            uid=usuario.id,
+            success="Usuário atualizado com sucesso.",
+        ))
+
+    return render_template(
+        "usuarios/form.html",
+        u=current_user(),
+        target=usuario,
+        perfis=perfis,
+        success=request.args.get("success"),
+    )
+
+
+@bp.post("/usuarios/<int:uid>/status")
+@require_level(3)
+def usuario_status(uid):
+    usuario = Usuario.query.get_or_404(uid)
+    if usuario.ativo and _ultimo_admin_ativo(usuario):
+        return redirect(url_for(
+            "main.usuarios",
+            error="Não é possível desativar o último administrador ativo.",
+        ))
+    usuario.ativo = not usuario.ativo
+    db.session.commit()
+    return redirect(url_for(
+        "main.usuarios",
+        success="Situação da conta atualizada.",
+    ))
+
+
+@bp.post("/usuarios/<int:uid>/excluir")
+@require_level(3)
+def usuario_excluir(uid):
+    usuario = Usuario.query.get_or_404(uid)
+    if usuario.id == current_user().id:
+        return redirect(url_for(
+            "main.usuarios",
+            error="Não é possível excluir a conta usada na sessão atual.",
+        ))
+    if _ultimo_admin_ativo(usuario):
+        return redirect(url_for(
+            "main.usuarios",
+            error="Não é possível excluir o último administrador ativo.",
+        ))
+    if _usuario_tem_referencias(usuario.id):
+        return redirect(url_for(
+            "main.usuarios",
+            error="Este usuário possui registros de auditoria ou importações e não pode ser excluído. Desative a conta.",
+        ))
+    db.session.delete(usuario)
+    db.session.commit()
+    return redirect(url_for(
+        "main.usuarios",
+        success="Usuário excluído com sucesso.",
+    ))
 
 
 @bp.route("/auditoria")
