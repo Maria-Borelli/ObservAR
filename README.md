@@ -175,7 +175,7 @@ git clone URL_DO_REPOSITORIO
 Entre na pasta do projeto:
 
 ```bash
-cd APS
+cd ObservAR
 ```
 
 Crie um ambiente virtual:
