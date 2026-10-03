@@ -1,6 +1,55 @@
-<aside class="sidebar"><div class="brand"><span class="logo">◈</span><div><strong>ObservAR</strong><small>Gestão Ambiental</small></div></div>
-<nav><a href="{{url_for('main.dashboard')}}">⌂ <span>Dashboard</span></a><a href="{{url_for('main.medicoes')}}">▤ <span>Medições</span></a><a href="{{url_for('main.estacoes')}}">⌖ <span>Estações</span></a><a href="{{url_for('main.mapa')}}">◎ <span>Mapa</span></a>
-{% if u.perfil.nivel>=2 %}<a href="{{url_for('main.analises')}}">◇ <span>Análises internas</span></a>{% endif %}
-{% if u.perfil.nivel>=3 %}<div class="nav-label">ADMINISTRAÇÃO</div><a href="{{url_for('importacao.index')}}">⇧ <span>Importação de dados</span></a><a href="{{url_for('main.usuarios')}}">♙ <span>Usuários</span></a><a href="{{url_for('main.auditoria')}}">☷ <span>Auditoria</span></a>{% endif %}</nav>
-<div class="userbox"><div class="avatar">{{u.nome[:1]}}</div><div><strong>{{u.nome}}</strong><small>Nível {{u.perfil.nivel}}</small></div></div>
-<form method="post" action="{{url_for('auth.logout')}}"><input type="hidden" name="_csrf" value="{{csrf_token()}}"><button class="logout">Sair do sistema</button></form></aside>
+{% set user_level = u.perfil.nivel %}
+<aside class="sidebar" aria-label="Menu lateral">
+    <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4c0 10-4 16-10 16a6 6 0 0 1-6-6C4 8 10 4 20 4ZM4 20l10-10"/></svg></span>
+        <div><strong>ObservAR</strong><small>Gestão Ambiental</small></div>
+    </div>
+    <nav class="sidebar-nav" aria-label="Navegação principal">
+        <a href="{{url_for('main.dashboard')}}" aria-label="Dashboard" title="Dashboard"{% if request.endpoint == 'main.dashboard' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="{{url_for('main.medicoes')}}" aria-label="Medições" title="Medições"{% if request.endpoint == 'main.medicoes' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 11h.01M13 11h3M9 16h.01M13 16h3"/></svg>
+            <span>Medições</span>
+        </a>
+        <a href="{{url_for('main.estacoes')}}" aria-label="Estações" title="Estações"{% if request.endpoint == 'main.estacoes' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Estações</span>
+        </a>
+        <a href="{{url_for('main.mapa')}}" aria-label="Mapa" title="Mapa"{% if request.endpoint == 'main.mapa' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></svg>
+            <span>Mapa</span>
+        </a>
+    {% if user_level >= 2 %}
+        <div class="nav-label">MONITORAMENTO</div>
+        <a href="{{url_for('main.analises')}}" aria-label="Análises internas" title="Análises internas"{% if request.endpoint == 'main.analises' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-10M15 5h6v6"/></svg>
+            <span>Análises internas</span>
+        </a>
+        <a href="{{url_for('importacao.index')}}" aria-label="Importação de dados" title="Importação de dados"{% if request.endpoint == 'importacao.index' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 16h1a5 5 0 0 0 0-10 7 7 0 0 0-13 2 4 4 0 0 0 0 8h1M12 12v9m-4-5 4-4 4 4"/></svg>
+            <span>Importação de dados</span>
+        </a>
+    {% endif %}
+    {% if user_level == 3 %}
+        <div class="nav-label">ADMINISTRAÇÃO</div>
+        <a href="{{url_for('main.usuarios')}}" aria-label="Usuários" title="Usuários"{% if request.endpoint == 'main.usuarios' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3a4 4 0 0 1 0 8"/><circle cx="9" cy="7" r="4"/></svg>
+            <span>Usuários</span>
+        </a>
+        <a href="{{url_for('main.auditoria')}}" aria-label="Auditoria" title="Auditoria"{% if request.endpoint == 'main.auditoria' %} class="active" aria-current="page"{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s9-4 9-11V5l-9-3-9 3v6c0 7 9 11 9 11Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Auditoria</span>
+        </a>
+    {% endif %}
+    </nav>
+    <div class="userbox" title="{{u.nome}} — Nível {{u.perfil.nivel}}">
+        <div class="avatar" aria-hidden="true">{{u.nome[:1]}}</div>
+        <div><strong>{{u.nome}}</strong><small>Nível {{u.perfil.nivel}}</small></div>
+    </div>
+    <form method="post" action="{{url_for('auth.logout')}}">
+        <input type="hidden" name="_csrf" value="{{csrf_token()}}">
+        <button type="submit" class="logout" aria-label="Sair do sistema" title="Sair do sistema"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Sair do sistema</span></button>
+    </form>
+</aside>

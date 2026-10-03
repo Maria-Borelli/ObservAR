@@ -16,7 +16,7 @@ Dashboard
 <div class="stats">
 
     <div class="card stat">
-        <span class="stat-icon">⌖</span>
+        <span class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
 
         <strong>
             {{ stats.estacoes | numero_br }}
@@ -26,7 +26,7 @@ Dashboard
     </div>
 
     <div class="card stat">
-        <span class="stat-icon">◎</span>
+        <span class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6ZM9 3v15M15 6v15"/></svg></span>
 
         <strong>
             {{ stats.municipios | numero_br }}
@@ -36,7 +36,7 @@ Dashboard
     </div>
 
     <div class="card stat">
-        <span class="stat-icon">▤</span>
+        <span class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg></span>
 
         <strong>
             {{ stats.medicoes | numero_br }}
@@ -50,11 +50,84 @@ Dashboard
 </div>
 
 
-<div class="grid2">
+<div class="dashboard-layout">
+        <div class="card dashboard-chart">
 
-    <div class="card">
+            <h2 id="station-chart-title">
+                Medições por estação
+            </h2>
 
-        <h3>Medições recentes</h3>
+            {% if not banco_ok %}
+
+                <div class="empty compact">
+                    Gráfico indisponível no momento.
+                </div>
+
+            {% elif stats.medicoes == 0 %}
+
+                <div class="empty compact">
+                    Importe uma base para visualizar
+                    os gráficos.
+                </div>
+
+            {% elif chart_data %}
+
+                <div class="bar-chart">
+
+                    {% set maior =
+                        chart_data
+                        | map(attribute="total")
+                        | max
+                    %}
+
+                    {% for item in chart_data %}
+
+                        <div class="bar-item">
+
+                            <div class="bar-header">
+
+                                <span
+                                    class="bar-label"
+                                    title="{{ item.label }}"
+                                >
+                                    {{ item.label }}
+                                </span>
+
+                                <strong>
+                                    {{ item.total | numero_br }}
+                                </strong>
+
+                            </div>
+
+                            <progress
+                                class="bar-progress"
+                                aria-label="{{ item.label }}: {{ item.total | numero_br }} medições"
+                                value="{{ item.total }}"
+                                max="{{ maior }}"
+                            >
+                                {{ item.total }}
+                            </progress>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty compact">
+                    Não há informações suficientes
+                    para gerar o gráfico.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    <div class="card recent-measurements">
+
+        <h2 id="recent-measurements-title">Medições recentes</h2>
 
         {% if not banco_ok %}
 
@@ -64,18 +137,18 @@ Dashboard
 
         {% elif recent %}
 
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0" role="region" aria-labelledby="recent-measurements-title">
 
-                <table>
+                <table aria-labelledby="recent-measurements-title">
 
                     <thead>
                         <tr>
-                            <th>Data</th>
-                            <th>Estação</th>
-                            <th>Parâmetro</th>
+                            <th scope="col">Data</th>
+                            <th scope="col">Estação</th>
+                            <th scope="col">Parâmetro</th>
 
                             {% if u.perfil.nivel >= 2 %}
-                                <th>Concentração</th>
+                                <th scope="col" class="concentration">Concentração</th>
                             {% endif %}
                         </tr>
                     </thead>
@@ -154,7 +227,7 @@ Dashboard
 
                                 {% if u.perfil.nivel >= 2 %}
 
-                                    <td>
+                                    <td class="concentration">
 
                                         {% if m.concentracao is not none %}
 
@@ -197,94 +270,6 @@ Dashboard
 
     </div>
 
-
-    <div class="card">
-
-        <h3>Nível de acesso</h3>
-
-        <div class="level-badge">
-            Nível {{ u.perfil.nivel }}
-        </div>
-
-        <p>
-            {{ acesso_texto }}
-        </p>
-
-
-        <div class="dashboard-chart">
-
-            <h3>
-                Medições por estação
-            </h3>
-
-            {% if not banco_ok %}
-
-                <div class="empty compact">
-                    Gráfico indisponível no momento.
-                </div>
-
-            {% elif stats.medicoes == 0 %}
-
-                <div class="empty compact">
-                    Importe uma base para visualizar
-                    os gráficos.
-                </div>
-
-            {% elif chart_data %}
-
-                <div class="bar-chart">
-
-                    {% set maior =
-                        chart_data
-                        | map(attribute="total")
-                        | max
-                    %}
-
-                    {% for item in chart_data %}
-
-                        <div class="bar-item">
-
-                            <div class="bar-header">
-
-                                <span
-                                    class="bar-label"
-                                    title="{{ item.label }}"
-                                >
-                                    {{ item.label }}
-                                </span>
-
-                                <strong>
-                                    {{ item.total | numero_br }}
-                                </strong>
-
-                            </div>
-
-                            <progress
-                                class="bar-progress"
-                                value="{{ item.total }}"
-                                max="{{ maior }}"
-                            >
-                                {{ item.total }}
-                            </progress>
-
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-            {% else %}
-
-                <div class="empty compact">
-                    Não há informações suficientes
-                    para gerar o gráfico.
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </div>
 
 </div>
 

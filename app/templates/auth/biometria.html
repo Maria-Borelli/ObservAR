@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">
+{% endblock %}
+
 {% block public %}
-<div class="login-bg">
+<main class="login-bg auth-page">
     <div class="login-wrap">
 
         <div class="login-logo">
-            <div class="logo big">◈</div>
+            <div class="logo big"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 4C11 3 4 7 4 13a7 7 0 0 0 7 7c6 0 9-7 9-16Z"/><path d="M4 20 15 9"/></svg></div>
 
             <h1>ObservAR</h1>
 
@@ -14,19 +18,11 @@
             </p>
         </div>
 
-        <div class="login-card">
+        <section class="login-card" aria-labelledby="biometria-title">
 
-            <div class="steps">
-                <em class="done">✓</em>
-                <span>Credenciais</span>
+            <ol class="auth-steps" aria-label="Etapas de autenticação"><li class="is-complete"><span class="step-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg></span><span>Credenciais<small>Concluídas</small></span></li><li class="is-active" aria-current="step"><span class="step-circle">2</span><span>Biometria facial<small>Etapa atual</small></span></li></ol>
 
-                <i></i>
-
-                <b>2</b>
-                <span>Biometria facial</span>
-            </div>
-
-            <h2>
+            <h2 id="biometria-title">
                 Autenticação facial
             </h2>
 
@@ -50,16 +46,17 @@
 
                 <video
                     id="video"
+                    aria-label="Prévia da câmera para verificação facial"
                     autoplay
                     playsinline
                 ></video>
 
                 <div
-                    class="face-guide"
+                    class="face-guide" aria-hidden="true"
                 ></div>
 
                 <div
-                    class="scan-line"
+                    class="scan-line" aria-hidden="true"
                 ></div>
 
             </div>
@@ -71,7 +68,7 @@
 
             <div
                 id="bio-msg"
-                class="alert info"
+                class="alert info" role="status" aria-live="polite" aria-atomic="true"
             >
                 A câmera ainda não foi iniciada.
             </div>
@@ -83,23 +80,22 @@
                 id="verify"
                 class="primary"
             >
-                Iniciar câmera e verificar
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h4l2-3h4l2 3h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="4"/></svg><span>Iniciar câmera</span>
             </button>
 
             <a
                 class="back"
                 href="{{ url_for('auth.login') }}"
             >
-                ← Voltar às credenciais
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12H4m6-6-6 6 6 6"/></svg><span>Voltar às credenciais</span>
             </a>
 
-        </div>
+            <div class="security-note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg><div><strong>Autenticação em duas etapas</strong><span>Senha + reconhecimento facial para proteger seu acesso.</span></div></div>
+        </section>
     </div>
-</div>
+    {% include "components/loading_overlay.html" %}
+</main>
 {% endblock %}
-
-
-{% include "components/loading_overlay.html" %}
 
 {% block scripts %}
 <script
