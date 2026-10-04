@@ -5,7 +5,12 @@
 Estações
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estacoes.css') }}">
+{% endblock %}
+
 {% block content %}
+<div class="stations-page">
 
 <div class="page-head">
 
@@ -28,33 +33,35 @@ Estações
 
     {{ pager(
         pagination,
-        per_page
+        per_page,
+        inline_icons=true
     ) }}
 
 
     {% if items %}
 
-    <div class="table-responsive">
+    <div class="table-responsive table-wrapper" tabindex="0" role="region" aria-label="Estações de monitoramento; use as setas para rolar horizontalmente">
 
         <table>
+            <caption class="stations-sr-only">Estações de monitoramento, municípios, códigos e coordenadas</caption>
 
             <thead>
 
                 <tr>
 
-                    <th>
+                    <th scope="col" class="station-name">
                         Estação
                     </th>
 
-                    <th>
+                    <th scope="col">
                         Município
                     </th>
 
-                    <th>
+                    <th scope="col">
                         Código
                     </th>
 
-                    <th>
+                    <th scope="col" class="column-coordinates">
                         Coordenadas
                     </th>
 
@@ -69,7 +76,7 @@ Estações
 
                 <tr>
 
-                    <td>
+                    <td class="station-name">
                         <b>
                             {{ s.nome }}
                         </b>
@@ -87,7 +94,7 @@ Estações
                         {{ s.codigo or '—' }}
                     </td>
 
-                    <td>
+                    <td class="column-coordinates">
                         {{ s.latitude or '—' }},
                         {{ s.longitude or '—' }}
                     </td>
@@ -109,6 +116,8 @@ Estações
     </div>
 
     {% endif %}
+
+</div>
 
 </div>
 

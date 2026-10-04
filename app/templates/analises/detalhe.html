@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block crumb %}
+Análises internas
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analises.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="internal-analyses-page">
+
+    <header class="page-head analyses-page-header">
+
+        <div>
+            <h1>Análise interna</h1>
+
+            <p>
+                Registro institucional associado a uma medição
+                da base MonitorAr.
+            </p>
+        </div>
+
+        <div class="analysis-header-actions">
+
+            <a
+                class="analysis-button analysis-button-secondary"
+                href="{{ url_for('main.analises') }}"
+            >
+                Voltar
+            </a>
+
+            <a
+                class="analysis-button analysis-button-primary"
+                href="{{ url_for('main.analise_editar', analise_id=analise.id) }}"
+            >
+                Editar análise
+            </a>
+
+        </div>
+
+    </header>
+
+    <section class="card analysis-detail-card">
+
+        <div class="analysis-section-heading">
+
+            <div>
+                <span class="analysis-eyebrow">
+                    Análise #{{ analise.id }}
+                </span>
+
+                <h2>
+                    Parecer técnico
+                </h2>
+            </div>
+
+            <span
+                class="analysis-priority analysis-priority-{{ (analise.prioridade or 'sem-prioridade') | lower }}"
+            >
+                {{ analise.prioridade or 'Sem prioridade' }}
+            </span>
+
+        </div>
+
+        <div class="analysis-detail-meta">
+
+            <div>
+                <span>Autor</span>
+                <strong>
+                    {{ analise.autor.nome if analise.autor else '—' }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Registrada em</span>
+                <strong>
+                    {{ analise.criada_em | data_hora_sistema_br }}
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="analysis-text-block">
+            <h3>Parecer</h3>
+
+            <p>
+                {{ analise.parecer or 'Sem parecer registrado.' }}
+            </p>
+        </div>
+
+        <div class="analysis-text-block">
+            <h3>Recomendação</h3>
+
+            <p>
+                {{ analise.recomendacao or 'Sem recomendação registrada.' }}
+            </p>
+        </div>
+
+    </section>
+
+    {% if analise.medicao %}
+
+    <section class="card analysis-measurement">
+
+        <div class="analysis-section-heading">
+            <div>
+                <span class="analysis-eyebrow">
+                    Medição vinculada
+                </span>
+
+                <h2>
+                    Dados oficiais
+                </h2>
+            </div>
+
+            <span class="analysis-measurement-id">
+                #{{ analise.medicao.id }}
+            </span>
+        </div>
+
+        <div class="analysis-data-grid">
+
+            <div class="analysis-data-item">
+                <span>Data/hora</span>
+                <strong>
+                    {{ analise.medicao.data_hora | data_hora_br }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Estação</span>
+                <strong>
+                    {{
+                        analise.medicao.estacao.nome
+                        if analise.medicao.estacao
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Parâmetro</span>
+                <strong>
+                    {{
+                        analise.medicao.parametro.nome
+                        if analise.medicao.parametro
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>IQAr</span>
+                <strong>
+                    {{
+                        analise.medicao.iqar | decimal_br
+                        if analise.medicao.iqar is not none
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Concentração</span>
+                <strong>
+                    {{
+                        analise.medicao.concentracao | decimal_br
+                        if analise.medicao.concentracao is not none
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Validação</span>
+                <strong>
+                    {{ analise.medicao.situacao or '—' }}
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+</section>
+{% endblock %}

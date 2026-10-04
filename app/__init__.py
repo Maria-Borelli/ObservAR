@@ -1,4 +1,6 @@
 import secrets
+from datetime import timezone
+from zoneinfo import ZoneInfo
 from urllib.parse import urlencode
 
 from flask import (
@@ -72,6 +74,35 @@ def formatar_data_hora_br(valor):
             "%d/%m/%Y %H:%M"
         )
     except AttributeError:
+        return str(valor)
+
+
+def formatar_data_hora_sistema_br(valor):
+    """
+    Converte timestamps internos armazenados em UTC
+    para o horário de Brasília e formata para apresentação.
+
+    Exemplo:
+    2026-10-04 04:35:00 UTC
+    -> 04/10/2026 01:35
+    """
+    if valor is None:
+        return "—"
+
+    try:
+        if valor.tzinfo is None:
+            valor = valor.replace(
+                tzinfo=timezone.utc
+            )
+
+        valor_brasilia = valor.astimezone(
+            ZoneInfo("America/Sao_Paulo")
+        )
+
+        return valor_brasilia.strftime(
+            "%d/%m/%Y %H:%M"
+        )
+    except (AttributeError, TypeError, ValueError):
         return str(valor)
 
 # Paginação
@@ -150,6 +181,9 @@ def create_app(test_config=None):
         "data_hora_br"
     ] = formatar_data_hora_br
 
+    app.jinja_env.filters[
+        "data_hora_sistema_br"
+    ] = formatar_data_hora_sistema_br
    
     app.jinja_env.globals[
         "pagination_url"

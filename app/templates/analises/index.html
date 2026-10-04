@@ -5,61 +5,173 @@
 Análises internas
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analises.css') }}">
+{% endblock %}
+
 {% block content %}
+<section class="internal-analyses-page" aria-labelledby="analyses-page-title">
 
-<div class="page-head">
+    <header class="page-head analyses-page-header">
 
-    <div>
+        <div>
+            <h1 id="analyses-page-title">
+                Análises internas
+            </h1>
 
-        <h1>
-            Análises internas
-        </h1>
+            <p>
+                Conteúdo institucional produzido pela aplicação —
+                não faz parte da base oficial MonitorAr.
+            </p>
+        </div>
 
-        <p>
-            Conteúdo institucional produzido pela aplicação —
-            não faz parte da base oficial MonitorAr.
-        </p>
+        <a
+            class="analysis-button analysis-button-secondary"
+            href="{{ url_for('main.medicoes') }}"
+        >
+            Ir para medições
+        </a>
 
-    </div>
-
-</div>
-
-
-<div class="card">
-
-    {{ pager(
-        pagination,
-        per_page
-    ) }}
+    </header>
 
 
     {% if items %}
 
-        {% for x in items %}
+    <div class="card analyses-panel">
 
-        <article>
+        {{ pager(
+            pagination,
+            per_page
+        ) }}
 
-            <b>
-                Prioridade:
-                {{ x.prioridade or '—' }}
-            </b>
+        <div class="analysis-list">
 
-            <p>
-                {{ x.parecer or 'Sem parecer.' }}
-            </p>
+            {% for x in items %}
 
-        </article>
+            <article class="analysis-list-item">
 
-        {% endfor %}
+                <div class="analysis-list-main">
+
+                    <div class="analysis-list-heading">
+
+                        <div>
+                            <span class="analysis-eyebrow">
+                                Análise #{{ x.id }}
+                            </span>
+
+                            <h2>
+                                {{
+                                    x.medicao.estacao.nome
+                                    if x.medicao
+                                    and x.medicao.estacao
+                                    else 'Medição sem estação'
+                                }}
+                            </h2>
+                        </div>
+
+                        <span
+                            class="analysis-priority analysis-priority-{{ (x.prioridade or 'sem-prioridade') | lower }}"
+                        >
+                            {{ x.prioridade or 'Sem prioridade' }}
+                        </span>
+
+                    </div>
+
+                    <p class="analysis-list-text">
+                        {{ x.parecer or 'Sem parecer registrado.' }}
+                    </p>
+
+                    <div class="analysis-list-meta">
+
+                        <span>
+                            <strong>Autor:</strong>
+                            {{ x.autor.nome if x.autor else '—' }}
+                        </span>
+
+                        <span>
+                            <strong>Data:</strong>
+                            {{ x.criada_em | data_hora_br }}
+                        </span>
+
+                        {% if x.medicao %}
+
+                        <span>
+                            <strong>Medição:</strong>
+                            #{{ x.medicao.id }}
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div class="analysis-list-actions">
+
+                    <a
+                        class="analysis-button analysis-button-secondary"
+                        href="{{ url_for('main.analise_detalhe', analise_id=x.id) }}"
+                    >
+                        Visualizar
+                    </a>
+
+                    <a
+                        class="analysis-button analysis-button-primary"
+                        href="{{ url_for('main.analise_editar', analise_id=x.id) }}"
+                    >
+                        Editar
+                    </a>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
 
     {% else %}
 
-    <div class="empty">
-        Nenhuma análise interna cadastrada.
+    <div class="analyses-empty-state">
+
+        <svg
+            class="analyses-empty-icon"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+            <path d="M14 2v6h6"/>
+            <path d="M8 16v2m4-5v5m4-8v8"/>
+        </svg>
+
+        <div>
+            <h2>Nenhuma análise interna cadastrada</h2>
+
+            <p>
+                Selecione uma medição para registrar o primeiro
+                parecer técnico.
+            </p>
+        </div>
+
+        <a
+            class="analysis-button analysis-button-primary"
+            href="{{ url_for('main.medicoes') }}"
+        >
+            Ir para medições
+        </a>
+
     </div>
 
     {% endif %}
 
-</div>
-
+</section>
 {% endblock %}

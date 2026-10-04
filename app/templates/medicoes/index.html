@@ -5,183 +5,277 @@
 Medições
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/medicoes.css') }}">
+{% endblock %}
+
 {% block content %}
+<div class="measurements-page">
 
-<div class="page-head">
+    <div class="page-head">
 
-    <div>
+        <div>
+            <h1>
+                Medições
+            </h1>
 
-        <h1>
-            Dados ambientais
-        </h1>
+            <p>
+                Consulta de medições de qualidade do ar
+            </p>
+        </div>
 
-        <p>
-            Consulta de medições de qualidade do ar
-        </p>
+    </div>
+
+
+    <form
+        class="filter measurements-search"
+        data-measurements-search
+        method="get"
+    >
+
+        <label class="measurements-search-field">
+            <span>Pesquisar por estação</span>
+
+            <input
+                name="q"
+                value="{{ request.args.get('q', '') }}"
+                placeholder="Pesquisar por estação..."
+            >
+        </label>
+
+        <input
+            type="hidden"
+            name="per_page"
+            value="{{ per_page }}"
+        >
+
+        <button type="submit" class="search-button">
+
+            <svg
+                class="search-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+            >
+                <circle cx="10.5" cy="10.5" r="7.5"/>
+                <path d="m16 16 5 5"/>
+            </svg>
+
+            <svg
+                class="measurements-spinner" hidden
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+            >
+                <circle cx="12" cy="12" r="9" opacity=".25"/>
+                <path d="M12 3a9 9 0 0 1 9 9"/>
+            </svg>
+
+            <span class="search-button-text">
+                Pesquisar
+            </span>
+
+        </button>
+
+        <span
+            class="measurements-sr-only search-status"
+            role="status"
+            aria-live="polite"
+        ></span>
+
+    </form>
+
+
+    <div class="card table-card">
+
+        {{ pager(
+            pagination,
+            per_page,
+            inline_icons=true
+        ) }}
+
+
+        {% if items %}
+
+        <div
+            class="table-responsive table-wrapper"
+            tabindex="0"
+            role="region"
+            aria-label="Medições de qualidade do ar; use as setas para rolar horizontalmente"
+        >
+
+            <table>
+
+                <caption class="measurements-sr-only">
+                    Medições de qualidade do ar por estação
+                </caption>
+
+                <thead>
+
+                    <tr>
+
+                        <th scope="col">
+                            Data/hora
+                        </th>
+
+                        <th scope="col">
+                            Estação
+                        </th>
+
+                        <th scope="col">
+                            Município
+                        </th>
+
+                        <th scope="col">
+                            Parâmetro
+                        </th>
+
+                        <th scope="col" class="column-iqar">
+                            IQAr
+                        </th>
+
+
+                        {% if u.perfil.nivel >= 2 %}
+
+                        <th scope="col" class="column-concentracao">
+                            Concentração
+                        </th>
+
+                        <th scope="col">
+                            Flag
+                        </th>
+
+                        <th scope="col">
+                            Validação
+                        </th>
+
+                        <th scope="col" class="column-actions">
+                            Ações
+                        </th>
+
+                        {% endif %}
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for m in items %}
+
+                    <tr>
+
+                        <td>
+                            {{ m.data_hora | data_hora_br }}
+                        </td>
+
+                        <td>
+                            {{ m.estacao.nome if m.estacao else '—' }}
+                        </td>
+
+                        <td>
+                            {{
+                                m.estacao.municipio.nome
+                                if m.estacao
+                                and m.estacao.municipio
+                                else '—'
+                            }}
+                        </td>
+
+                        <td>
+                            {{ m.parametro.nome if m.parametro else '—' }}
+                        </td>
+
+                        <td class="column-iqar">
+                            {{
+                                m.iqar | decimal_br
+                                if m.iqar is not none
+                                else '—'
+                            }}
+                        </td>
+
+
+                        {% if u.perfil.nivel >= 2 %}
+
+                        <td class="column-concentracao">
+                            {{
+                                m.concentracao | decimal_br
+                                if m.concentracao is not none
+                                else '—'
+                            }}
+                        </td>
+
+                        <td>
+                            {{ m.codigo_flag or '—' }}
+                        </td>
+
+                        <td>
+                            {{ m.situacao or '—' }}
+                        </td>
+
+                        <td class="column-actions">
+
+                            <a
+                                class="analysis-action"
+                                href="{{ url_for('main.analise_nova', medicao_id=m.id) }}"
+                                aria-label="Criar análise para a medição {{ m.id }}"
+                            >
+
+                                <svg
+                                    width="17"
+                                    height="17"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                </svg>
+
+                                <span>
+                                    Criar análise
+                                </span>
+
+                            </a>
+
+                        </td>
+
+                        {% endif %}
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            Nenhuma medição encontrada.
+        </div>
+
+        {% endif %}
 
     </div>
 
 </div>
-
-
-<form
-    class="filter"
-    method="get"
->
-
-    <input
-        name="q"
-        value="{{ request.args.get('q', '') }}"
-        placeholder="Pesquisar por estação..."
-    >
-
-    <input
-        type="hidden"
-        name="per_page"
-        value="{{ per_page }}"
-    >
-
-    <button type="submit">
-        Pesquisar
-    </button>
-
-</form>
-
-
-<div class="card table-card">
-
-    {{ pager(
-        pagination,
-        per_page
-    ) }}
-
-
-    {% if items %}
-
-    <div class="table-responsive">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Data/hora
-                    </th>
-
-                    <th>
-                        Estação
-                    </th>
-
-                    <th>
-                        Município
-                    </th>
-
-                    <th>
-                        Parâmetro
-                    </th>
-
-                    <th>
-                        IQAr
-                    </th>
-
-
-                    {% if u.perfil.nivel >= 2 %}
-
-                    <th>
-                        Concentração
-                    </th>
-
-                    <th>
-                        Flag
-                    </th>
-
-                    <th>
-                        Validação
-                    </th>
-
-                    {% endif %}
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for m in items %}
-
-                <tr>
-
-                    <td>
-                        {{ m.data_hora | data_hora_br }}
-                    </td>
-
-                    <td>
-                        {{ m.estacao.nome if m.estacao else '—' }}
-                    </td>
-
-                    <td>
-                        {{
-                            m.estacao.municipio.nome
-                            if m.estacao
-                            and m.estacao.municipio
-                            else '—'
-                        }}
-                    </td>
-
-                    <td>
-                        {{ m.parametro.nome if m.parametro else '—' }}
-                    </td>
-
-                    <td>
-                        {{
-                            m.iqar | decimal_br
-                            if m.iqar is not none
-                            else '—'
-                        }}
-                    </td>
-
-
-                    {% if u.perfil.nivel >= 2 %}
-
-                    <td>
-                        {{
-                            m.concentracao | decimal_br
-                            if m.concentracao is not none
-                            else '—'
-                        }}
-                    </td>
-
-                    <td>
-                        {{ m.codigo_flag or '—' }}
-                    </td>
-
-                    <td>
-                        {{ m.situacao or '—' }}
-                    </td>
-
-                    {% endif %}
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-    {% else %}
-
-    <div class="empty">
-        Nenhuma medição encontrada.
-    </div>
-
-    {% endif %}
-
-</div>
-
 {% endblock %}

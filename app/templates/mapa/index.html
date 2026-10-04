@@ -1,1 +1,35 @@
-{% extends "base.html" %}{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}{% block crumb %}Mapa{% endblock %}{% block content %}<div class="page-head"><div><h1>Mapa de estações</h1><p>OpenStreetMap com coordenadas da base MonitorAr</p></div></div>{% if stations %}<div id="map" class="map"></div><script id="stations" type="application/json">[{% for s in stations %}{"name":{{s.nome|tojson}},"city":{{s.municipio.nome|tojson}},"lat":{{s.latitude}},"lng":{{s.longitude}}}{% if not loop.last %},{% endif %}{% endfor %}]</script>{% else %}<div class="card empty">Nenhuma estação com coordenadas válidas.</div>{% endif %}{% endblock %}{% block scripts %}{% if stations %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="{{url_for('static',filename='js/mapa.js')}}"></script>{% endif %}{% endblock %}
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mapa.css') }}">
+{% endblock %}
+
+{% block crumb %}Mapa{% endblock %}
+
+{% block content %}
+<section class="map-page" aria-labelledby="map-page-title">
+    <header class="page-head map-page-header">
+        <div>
+            <h1 id="map-page-title">Mapa de estações</h1>
+            <p>OpenStreetMap com coordenadas da base MonitorAr</p>
+        </div>
+    </header>
+
+    {% if stations %}
+    <div class="map-wrapper">
+        <div id="map" class="map" aria-label="Mapa interativo das estações de monitoramento"></div>
+    </div>
+    <script id="stations" type="application/json">[{% for s in stations %}{"name":{{s.nome|tojson}},"city":{{s.municipio.nome|tojson}},"lat":{{s.latitude}},"lng":{{s.longitude}}}{% if not loop.last %},{% endif %}{% endfor %}]</script>
+    {% else %}
+    <div class="card empty">Nenhuma estação com coordenadas válidas.</div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if stations %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{url_for('static',filename='js/mapa.js')}}"></script>
+{% endif %}
+{% endblock %}

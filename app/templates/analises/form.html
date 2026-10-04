@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block crumb %}
+Análises internas
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analises.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="internal-analyses-page">
+
+    <header class="page-head analyses-page-header">
+        <div>
+            <h1>{{ titulo }}</h1>
+            <p>
+                Registre uma avaliação institucional sem alterar
+                os dados oficiais importados do MonitorAr.
+            </p>
+        </div>
+    </header>
+
+    {% if erros %}
+    <div class="analysis-alert" role="alert">
+        <strong>Não foi possível salvar a análise.</strong>
+
+        <ul>
+            {% for erro in erros %}
+            <li>{{ erro }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <section class="card analysis-measurement">
+
+        <div class="analysis-section-heading">
+            <div>
+                <span class="analysis-eyebrow">
+                    Medição selecionada
+                </span>
+
+                <h2>Dados ambientais</h2>
+            </div>
+
+            <span class="analysis-measurement-id">
+                #{{ medicao.id }}
+            </span>
+        </div>
+
+        <div class="analysis-data-grid">
+
+            <div class="analysis-data-item">
+                <span>Data/hora</span>
+                <strong>
+                    {{ medicao.data_hora | data_hora_br }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Estação</span>
+                <strong>
+                    {{ medicao.estacao.nome if medicao.estacao else '—' }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Município</span>
+                <strong>
+                    {{
+                        medicao.estacao.municipio.nome
+                        if medicao.estacao
+                        and medicao.estacao.municipio
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Parâmetro</span>
+                <strong>
+                    {{ medicao.parametro.nome if medicao.parametro else '—' }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>IQAr</span>
+                <strong>
+                    {{
+                        medicao.iqar | decimal_br
+                        if medicao.iqar is not none
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+            <div class="analysis-data-item">
+                <span>Concentração</span>
+                <strong>
+                    {{
+                        medicao.concentracao | decimal_br
+                        if medicao.concentracao is not none
+                        else '—'
+                    }}
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <form method="post" class="card analysis-form">
+
+    <input
+        type="hidden"
+        name="_csrf"
+        value="{{ csrf_token() }}"
+    >
+
+        <div class="analysis-field">
+
+            <label for="prioridade">
+                Prioridade
+            </label>
+
+            {% set prioridade_atual = request.form.get(
+                'prioridade',
+                analise.prioridade if analise else ''
+            ) %}
+
+            <select
+                id="prioridade"
+                name="prioridade"
+                required
+            >
+                <option value="">Selecione uma prioridade</option>
+
+                {% for prioridade in ['Baixa', 'Média', 'Alta', 'Crítica'] %}
+                <option
+                    value="{{ prioridade }}"
+                    {% if prioridade_atual == prioridade %}selected{% endif %}
+                >
+                    {{ prioridade }}
+                </option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div class="analysis-field">
+
+            <label for="parecer">
+                Parecer técnico
+            </label>
+
+            <textarea
+                id="parecer"
+                name="parecer"
+                rows="7"
+                maxlength="10000"
+                required
+                placeholder="Descreva a avaliação técnica desta medição."
+            >{{ request.form.get(
+                'parecer',
+                analise.parecer if analise else ''
+            ) }}</textarea>
+
+        </div>
+
+        <div class="analysis-field">
+
+            <label for="recomendacao">
+                Recomendação
+            </label>
+
+            <textarea
+                id="recomendacao"
+                name="recomendacao"
+                rows="5"
+                maxlength="10000"
+                required
+                placeholder="Informe as ações ou acompanhamentos recomendados."
+            >{{ request.form.get(
+                'recomendacao',
+                analise.recomendacao if analise else ''
+            ) }}</textarea>
+
+        </div>
+
+        <p class="analysis-form-note">
+            Esta análise é um registro interno do ObservAR e não altera
+            a medição original do MonitorAr.
+        </p>
+
+        <div class="analysis-form-actions">
+
+            <a
+                class="analysis-button analysis-button-secondary"
+                href="{{ url_for('main.analises') }}"
+            >
+                Cancelar
+            </a>
+
+            <button
+                class="analysis-button analysis-button-primary"
+                type="submit"
+            >
+                Salvar análise
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+{% endblock %}

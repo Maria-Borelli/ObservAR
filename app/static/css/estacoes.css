@@ -1,0 +1,163 @@
+/* Stations page: additions to the shared ObservAR components. */
+.stations-page {
+    min-width: 0;
+}
+
+.stations-page .stations-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Pagination controls */
+.stations-page .pagination {
+    gap: 16px;
+}
+
+.stations-page .pagination-controls {
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+.stations-page .pagination-link,
+.stations-page .pagination-arrow {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 14px;
+    transition: all 0.3s ease-in-out;
+}
+
+.stations-page .pagination a:hover {
+    background: #edf7f1;
+    border-color: #2a7a5a;
+    color: #1e5b43;
+}
+
+.stations-page .pagination-link.active {
+    background: #1e5b43;
+    border-color: #1e5b43;
+    color: white;
+}
+
+.stations-page .pagination-arrow.disabled {
+    opacity: 0.65;
+}
+
+.stations-page .pagination-info {
+    font-size: 12px;
+}
+
+.stations-page :is(a, select, .table-wrapper):focus-visible {
+    outline: 2px solid #1e5b43;
+    outline-offset: 3px;
+}
+
+/* Items per page: CSS arrow with native keyboard interaction. */
+.stations-page .pagination-size label {
+    flex-wrap: wrap;
+    font-size: 14px;
+}
+
+.stations-page .per-page-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-height: 44px;
+    border-radius: 8px;
+    padding: 10px 32px 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: white;
+    background-image: linear-gradient(45deg, transparent 50%, #1e5b43 50%),
+        linear-gradient(135deg, #1e5b43 50%, transparent 50%);
+    background-position: calc(100% - 17px) 19px, calc(100% - 12px) 19px;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    transition: all 0.3s ease-in-out;
+}
+
+.stations-page .per-page-select:focus {
+    border-color: #1e5b43;
+    box-shadow: 0 0 0 3px rgba(30, 91, 67, 0.15);
+    outline: none;
+}
+
+/* Stations table */
+.stations-page table {
+    min-width: 680px;
+    font-size: 14px;
+}
+
+.stations-page th {
+    color: #4d6358;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.stations-page th,
+.stations-page td {
+    padding: 14px 16px;
+}
+
+.stations-page .station-name {
+    min-width: 180px;
+}
+
+.stations-page .station-name b {
+    font-weight: 600;
+}
+
+.stations-page .column-coordinates {
+    min-width: 180px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.stations-page tbody tr {
+    transition: all 0.3s ease-in-out;
+}
+
+.stations-page tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Responsive table */
+.stations-page .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive layout and accessibility preferences */
+@media (max-width: 600px) {
+    .stations-page .pagination {
+        padding: 14px;
+    }
+
+    .stations-page .pagination-controls {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stations-page .pagination-link,
+    .stations-page .pagination-arrow,
+    .stations-page .per-page-select,
+    .stations-page tbody tr {
+        transition: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .stations-page .per-page-select {
+        appearance: auto;
+        background-image: none;
+    }
+}

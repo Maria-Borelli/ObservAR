@@ -1,0 +1,54 @@
+﻿/* Measurements page: scoped additions to the shared ObservAR design. */
+.measurements-page { --measurements-green: #1e5b43; --measurements-hover: #2a7a5a; min-width: 0; }
+.measurements-page .measurements-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Search controls */
+.measurements-page .measurements-search { flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 18px; margin-bottom: 20px; }
+.measurements-search-field { display: flex; flex: 1 1 260px; flex-direction: column; gap: 8px; min-width: 0; font-size: 14px; font-weight: 600; }
+.measurements-page .filter input:not([type="hidden"]) { width: 100%; min-width: 0; min-height: 44px; background: #fff; color: var(--ink); font-weight: 400; }
+.measurements-page input, .measurements-page select, .measurements-page button, .measurements-page .pagination a, .measurements-page tbody tr { transition: all 0.3s ease-in-out; }
+.measurements-page input:focus, .measurements-page select:focus { outline: none; border-color: #1e5b43; box-shadow: 0 0 0 3px rgba(30, 91, 67, 0.15); }
+.measurements-page input:-webkit-autofill, .measurements-page input:-webkit-autofill:hover, .measurements-page input:-webkit-autofill:focus { -webkit-text-fill-color: #1a2820; -webkit-box-shadow: 0 0 0 1000px white inset; }
+.measurements-page input:-webkit-autofill:focus { box-shadow: 0 0 0 1000px white inset, 0 0 0 3px rgba(30, 91, 67, 0.15); }
+.measurements-page :is(button, a, select, input, .table-wrapper):focus-visible { outline: 2px solid #1e5b43; outline-offset: 3px; }
+
+/* Search button and loading state */
+.measurements-page .search-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; min-width: 160px; padding: 10px 20px; background: #1e5b43; color: white; }
+.measurements-page .search-button:hover { background: #2a7a5a; }
+.measurements-page .search-button:disabled { background: #1e5b43; opacity: .8; cursor: wait; }
+.measurements-page svg[hidden] { display: none; }
+.measurements-spinner { animation: measurements-spin .8s linear infinite; }
+@keyframes measurements-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Items per page: CSS arrow retains the native select interaction. */
+.measurements-page .per-page-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; min-height: 44px; border-radius: 8px; padding: 10px 32px 10px 12px; cursor: pointer; font-size: 14px; background-color: white; background-image: linear-gradient(45deg, transparent 50%, #1e5b43 50%), linear-gradient(135deg, #1e5b43 50%, transparent 50%); background-position: calc(100% - 17px) 19px, calc(100% - 12px) 19px; background-size: 5px 5px; background-repeat: no-repeat; }
+.measurements-page .pagination-size label { flex-wrap: wrap; font-size: 14px; }
+
+/* Measurements table */
+.measurements-page .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.measurements-page table { min-width: 720px; font-size: 14px; }
+.measurements-page th { color: #4d6358; font-size: 12px; }
+.measurements-page th, .measurements-page td { padding: 14px 16px; }
+.measurements-page tbody tr:hover { background: #f8fafc; }
+.measurements-page .column-iqar, .measurements-page .column-concentracao { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Pagination */
+.measurements-page .pagination { gap: 16px; }
+.measurements-page .pagination-controls { flex-wrap: wrap; max-width: 100%; }
+.measurements-page .pagination-link, .measurements-page .pagination-arrow { min-width: 44px; min-height: 44px; font-size: 14px; }
+.measurements-page .pagination a:hover { background: #edf7f1; border-color: #2a7a5a; color: #1e5b43; }
+.measurements-page .pagination-link.active { background: #1e5b43; border-color: #1e5b43; color: white; }
+.measurements-page .pagination-arrow.disabled { opacity: .65; }
+.measurements-page .pagination-info { font-size: 12px; }
+
+/* Responsive and reduced motion */
+@media (max-width: 600px) {
+    .measurements-page .measurements-search { padding: 14px; }
+    .measurements-page .search-button { width: 100%; }
+    .measurements-page .pagination { padding: 14px; }
+    .measurements-page .pagination-controls { width: 100%; justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .measurements-page *, .measurements-page *::before, .measurements-page *::after { transition: none; animation: none; }
+}
+@media (forced-colors: active) { .measurements-page .per-page-select { appearance: auto; background-image: none; } }

@@ -193,17 +193,280 @@ def mapa():
 @bp.route("/analises")
 @require_level(2)
 def analises():
-    query = AnaliseInterna.query.order_by(
-        AnaliseInterna.criada_em.desc(),
-        AnaliseInterna.id.desc(),
+    query = (
+        AnaliseInterna.query
+        .options(
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.estacao),
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.parametro),
+            joinedload(AnaliseInterna.autor),
+        )
+        .order_by(
+            AnaliseInterna.criada_em.desc(),
+            AnaliseInterna.id.desc(),
+        )
     )
+
     pagination, per_page = _paginate(query)
+
     return render_template(
         "analises/index.html",
         u=current_user(),
         items=pagination.items,
         pagination=pagination,
         per_page=per_page,
+    )
+
+
+@bp.route("/analises/nova/<int:medicao_id>", methods=["GET", "POST"])
+@require_level(2)
+def analise_nova(medicao_id):
+    usuario = current_user()
+
+    medicao = (
+        MedicaoQualidadeAr.query
+        .options(
+            joinedload(MedicaoQualidadeAr.estacao)
+            .joinedload(EstacaoMonitoramento.municipio),
+            joinedload(MedicaoQualidadeAr.parametro),
+        )
+        .filter_by(id=medicao_id)
+        .first_or_404()
+    )
+
+    if request.method == "POST":
+        print(">>> ENTROU NO POST", flush=True)
+        print("Content-Type:", request.content_type, flush=True)
+        print("Content-Length:", request.content_length, flush=True)
+
+        try:
+            dados_form = request.form.to_dict()
+            print("FORM ANALISE:", dados_form, flush=True)
+        except Exception as erro:
+            print(
+                "ERRO AO LER REQUEST.FORM:",
+                type(erro).__name__,
+                repr(erro),
+                flush=True,
+            )
+            raise
+
+        prioridade = request.form.get("prioridade", "").strip()
+        parecer = request.form.get("parecer", "").strip()
+        recomendacao = request.form.get("recomendacao", "").strip()
+
+        erros = []
+
+        if prioridade not in {"Baixa", "Média", "Alta", "Crítica"}:
+            erros.append("Selecione uma prioridade válida.")
+
+        if not parecer:
+            erros.append("O parecer é obrigatório.")
+
+        if not recomendacao:
+            erros.append("A recomendação é obrigatória.")
+
+        if erros:
+            print("ERROS DE VALIDAÇÃO:", erros, flush=True)
+
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=None,
+                erros=erros,
+                titulo="Nova análise interna",
+            ), 400
+
+        analise = AnaliseInterna(
+            medicao_id=medicao.id,
+            prioridade=prioridade,
+            parecer=parecer,
+            recomendacao=recomendacao,
+            autor_id=usuario.id,
+        )
+
+        try:
+            db.session.add(analise)
+            db.session.commit()
+        except SQLAlchemyError as erro:
+            db.session.rollback()
+
+            print(
+                "ERRO AO SALVAR ANALISE:",
+                type(erro).__name__,
+                repr(erro),
+                flush=True,
+            )
+
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=None,
+                erros=["Não foi possível salvar a análise interna."],
+                titulo="Nova análise interna",
+            ), 500
+
+        print(
+            "ANALISE SALVA:",
+            analise.id,
+            flush=True,
+        )
+
+        return redirect(
+            url_for(
+                "main.analise_detalhe",
+                analise_id=analise.id,
+            )
+        )
+
+        if erros:
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=None,
+                erros=erros,
+                titulo="Nova análise interna",
+            ), 400
+
+        analise = AnaliseInterna(
+            medicao_id=medicao.id,
+            prioridade=prioridade,
+            parecer=parecer,
+            recomendacao=recomendacao,
+            autor_id=usuario.id,
+        )
+
+        try:
+            db.session.add(analise)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=None,
+                erros=["Não foi possível salvar a análise interna."],
+                titulo="Nova análise interna",
+            ), 500
+
+        return redirect(
+            url_for("main.analise_detalhe", analise_id=analise.id)
+        )
+
+    return render_template(
+        "analises/form.html",
+        u=usuario,
+        medicao=medicao,
+        analise=None,
+        erros=[],
+        titulo="Nova análise interna",
+    )
+
+
+@bp.route("/analises/<int:analise_id>")
+@require_level(2)
+def analise_detalhe(analise_id):
+    analise = (
+        AnaliseInterna.query
+        .options(
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.estacao),
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.parametro),
+            joinedload(AnaliseInterna.autor),
+        )
+        .filter_by(id=analise_id)
+        .first_or_404()
+    )
+
+    return render_template(
+        "analises/detalhe.html",
+        u=current_user(),
+        analise=analise,
+    )
+
+
+@bp.route("/analises/<int:analise_id>/editar", methods=["GET", "POST"])
+@require_level(2)
+def analise_editar(analise_id):
+    usuario = current_user()
+
+    analise = (
+        AnaliseInterna.query
+        .options(
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.estacao)
+            .joinedload(EstacaoMonitoramento.municipio),
+            joinedload(AnaliseInterna.medicao)
+            .joinedload(MedicaoQualidadeAr.parametro),
+        )
+        .filter_by(id=analise_id)
+        .first_or_404()
+    )
+
+    medicao = analise.medicao
+
+    if request.method == "POST":
+        prioridade = request.form.get("prioridade", "").strip()
+        parecer = request.form.get("parecer", "").strip()
+        recomendacao = request.form.get("recomendacao", "").strip()
+
+        erros = []
+
+        if prioridade not in {"Baixa", "Média", "Alta", "Crítica"}:
+            erros.append("Selecione uma prioridade válida.")
+
+        if not parecer:
+            erros.append("O parecer é obrigatório.")
+
+        if not recomendacao:
+            erros.append("A recomendação é obrigatória.")
+
+        if erros:
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=analise,
+                erros=erros,
+                titulo="Editar análise interna",
+            ), 400
+
+        analise.prioridade = prioridade
+        analise.parecer = parecer
+        analise.recomendacao = recomendacao
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+
+            return render_template(
+                "analises/form.html",
+                u=usuario,
+                medicao=medicao,
+                analise=analise,
+                erros=["Não foi possível atualizar a análise interna."],
+                titulo="Editar análise interna",
+            ), 500
+
+        return redirect(
+            url_for("main.analise_detalhe", analise_id=analise.id)
+        )
+
+    return render_template(
+        "analises/form.html",
+        u=usuario,
+        medicao=medicao,
+        analise=analise,
+        erros=[],
+        titulo="Editar análise interna",
     )
 
 

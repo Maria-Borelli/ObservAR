@@ -342,7 +342,6 @@ class MedicaoQualidadeAr(db.Model):
     )
 
 
-
 class AnaliseInterna(db.Model):
     __tablename__ = "analise_interna"
 
@@ -378,6 +377,42 @@ class AnaliseInterna(db.Model):
     autor_id = db.Column(
         db.Integer,
         db.ForeignKey("usuario.id"),
+    )
+
+    medicao = db.relationship(
+        "MedicaoQualidadeAr",
+        foreign_keys=[medicao_id],
+        backref="analises_internas",
+    )
+
+    autor = db.relationship(
+        "Usuario",
+        foreign_keys=[autor_id],
+        backref="analises_internas",
+    )
+
+    medicao = db.relationship(
+        "MedicaoQualidadeAr",
+        foreign_keys=[medicao_id],
+        backref="analises_internas",
+    )
+
+    autor = db.relationship(
+        "Usuario",
+        foreign_keys=[autor_id],
+        backref="analises_internas",
+    )
+
+    medicao = db.relationship(
+        "MedicaoQualidadeAr",
+        foreign_keys=[medicao_id],
+        backref="analises_internas",
+    )
+
+    autor = db.relationship(
+        "Usuario",
+        foreign_keys=[autor_id],
+        backref="analises_internas",
     )
 
 
