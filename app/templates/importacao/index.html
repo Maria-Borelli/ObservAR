@@ -3,6 +3,9 @@
 {% block title %}ObservAR | Importação de dados{% endblock %}
 {% block crumb %}Importação de dados{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/importacao.css') }}?v=1">
+{% endblock %}
 {% block content %}
 
 <div class="page-head">
@@ -18,7 +21,7 @@
 
 <section class="card import-main-card">
 
-    <h3>Enviar arquivo CSV</h3>
+    <h2>Enviar arquivo CSV</h2>
 
     <form
         id="import-form"
@@ -31,28 +34,19 @@
             value="{{ csrf_token() }}"
         >
 
-                <label
-            class="upload-box"
+        <label
+            class="upload-box upload-dropzone"
             for="arquivo"
         >
             <span
                 class="upload-icon"
                 aria-hidden="true"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M20 20H4m8-3V6m0 11 3-3m-3 3-3-3"
-                    />
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 16.6a5 5 0 0 0-1.8-9.6A6 6 0 0 0 6.5 5.8 4 4 0 0 0 4 13.6" />
+                    <path d="m8 16 4-4 4 4M12 12v9" />
                 </svg>
             </span>
 
@@ -60,7 +54,8 @@
                 Escolher arquivo CSV
             </strong>
 
-            <small>
+            <span class="upload-instruction">Arraste e solte o arquivo aqui ou clique para selecionar.</span>
+            <small id="arquivo-ajuda">
                 Máximo {{ max_mb }} MB
                 • processamento em lotes de
                 {{ chunk_size | numero_br }}
@@ -73,15 +68,18 @@
             type="file"
             name="arquivo"
             accept=".csv,text/csv"
+            aria-describedby="arquivo-ajuda arquivo-nome arquivo-feedback"
         >
 
         <div
             id="arquivo-nome"
             class="upload-file-name"
+            role="status" aria-live="polite" aria-atomic="true"
         >
             Nenhum arquivo selecionado.
         </div>
 
+        <p id="arquivo-feedback" class="upload-feedback" role="status" aria-live="polite"></p>
         <button
             id="import-submit"
             class="primary import-submit"
@@ -215,26 +213,24 @@
 
 <section class="card table-card import-history">
 
-    <h3>
-        Histórico de importações
-    </h3>
+    <h2 id="import-history-title">Histórico de importações</h2>
 
     {% if historico %}
 
-    <div class="table-responsive">
+    <div class="table-responsive" tabindex="0" role="region" aria-labelledby="import-history-title">
 
-        <table>
+        <table aria-labelledby="import-history-title">
 
             <thead>
                 <tr>
-                    <th>Início</th>
-                    <th>Arquivo</th>
-                    <th>Responsável</th>
-                    <th>Status</th>
-                    <th>Processadas</th>
-                    <th>Importadas</th>
-                    <th>Duplicados</th>
-                    <th>Conflitos</th>
+                    <th scope="col">Início</th>
+                    <th scope="col">Arquivo</th>
+                    <th scope="col">Responsável</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="numeric-column">Processadas</th>
+                    <th scope="col" class="numeric-column">Importadas</th>
+                    <th scope="col" class="numeric-column">Duplicados</th>
+                    <th scope="col" class="numeric-column">Conflitos</th>
                 </tr>
             </thead>
 
@@ -261,24 +257,28 @@
                     </td>
 
                     <td>
-                        <span class="status-tag">
+                        <span class="status-tag status-badge
+                            {% if item.status == 'Concluída' %}badge-sucesso
+                            {% elif item.status in ['Erro', 'Erro durante o cancelamento'] %}badge-erro
+                            {% elif item.status in ['Concluída com ressalvas', 'Arquivo já importado', 'Cancelamento solicitado', 'Removendo dados importados', 'Cancelada'] %}badge-aviso
+                            {% else %}badge-info{% endif %}">
                             {{ item.status }}
                         </span>
                     </td>
 
-                    <td>
+                    <td class="numeric-column">
                         {{ item.linhas_processadas | numero_br }}
                     </td>
 
-                    <td>
+                    <td class="numeric-column">
                         {{ item.registros_importados | numero_br }}
                     </td>
 
-                    <td>
+                    <td class="numeric-column">
                         {{ item.duplicados | numero_br }}
                     </td>
 
-                    <td>
+                    <td class="numeric-column">
                         {{ item.conflitos | numero_br }}
                     </td>
 
@@ -308,7 +308,7 @@
 {% block scripts %}
 
 <script
-    src="{{ url_for('static', filename='js/importacao.js') }}?v=3"
+    src="{{ url_for('static', filename='js/importacao.js') }}?v=4"
 ></script>
 
 {% endblock %}

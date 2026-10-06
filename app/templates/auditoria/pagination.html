@@ -1,0 +1,312 @@
+{% macro pager(
+    pagination,
+    per_page,
+    page_param="page",
+    per_page_param="per_page",
+    inline_icons=true,
+    label="Auditoria"
+) %}
+
+{% if pagination and pagination.pages > 1 %}
+
+<nav
+    class="pagination"
+    aria-label="{{ label }}: navegação entre páginas"
+>
+
+    <form class="pagination-size audit-page-size" method="get" action="{{ url_for(request.endpoint) }}">
+        {% for key, value in request.args.items(multi=true) %}
+            {% if key not in [page_param, per_page_param] %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        <input type="hidden" name="{{ page_param }}" value="1">
+
+        <label>
+            Itens por página
+
+            <select
+                class="per-page-select"
+                name="{{ per_page_param }}"
+                data-param="{{ per_page_param }}"
+                aria-label="{{ label }}: itens por página"
+            >
+
+                {% for size in (25, 50, 100) %}
+
+                    <option
+                        value="{{ size }}"
+                        {% if per_page == size %}selected{% endif %}
+                    >
+                        {{ size }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </label>
+        <button class="audit-size-apply" type="submit">Aplicar</button>
+    </form>
+
+
+    <div class="pagination-controls">
+
+        {% set current = pagination.page %}
+        {% set last = pagination.pages %}
+
+
+        {% if pagination.has_prev %}
+
+            <a
+                class="pagination-arrow"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: pagination.prev_num})) }}"
+                aria-label="Página anterior"
+                title="Página anterior"
+            >
+{% if inline_icons %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>{% else %}‹{% endif %}
+            </a>
+
+        {% else %}
+
+            <span
+                class="pagination-arrow disabled"
+                aria-label="Página anterior"
+                aria-disabled="true"
+                title="Página anterior"
+            >
+{% if inline_icons %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>{% else %}‹{% endif %}
+            </span>
+
+        {% endif %}
+
+
+        {% if last <= 7 %}
+
+            {% for number in range(1, last + 1) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: number})) }}"
+                        {% if number == 1 %}
+                            aria-label="Ir para a primeira página"
+                        {% elif number == last %}
+                            aria-label="Ir para a última página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+
+        {% elif current <= 4 %}
+
+            {% for number in range(1, 6) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: number})) }}"
+                        {% if number == 1 %}
+                            aria-label="Ir para a primeira página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            <a
+                class="pagination-link"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: last})) }}"
+                aria-label="Ir para a última página"
+            >
+                {{ last | numero_br }}
+            </a>
+
+
+
+        {% elif current >= last - 3 %}
+
+            <a
+                class="pagination-link"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: 1})) }}"
+                aria-label="Ir para a primeira página"
+            >
+                1
+            </a>
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            {% for number in range(last - 4, last + 1) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: number})) }}"
+                        {% if number == last %}
+                            aria-label="Ir para a última página"
+                        {% endif %}
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+        {% else %}
+
+            <a
+                class="pagination-link"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: 1})) }}"
+                aria-label="Ir para a primeira página"
+            >
+                1
+            </a>
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            {% for number in range(
+                current - 1,
+                current + 2
+            ) %}
+
+                {% if number == current %}
+
+                    <span
+                        class="pagination-link active"
+                        aria-current="page"
+                    >
+                        {{ number | numero_br }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        class="pagination-link"
+                        href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: number})) }}"
+                    >
+                        {{ number | numero_br }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <span
+                class="pagination-ellipsis"
+                aria-hidden="true"
+            >
+                ...
+            </span>
+
+
+            <a
+                class="pagination-link"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: last})) }}"
+                aria-label="Ir para a última página"
+            >
+                {{ last | numero_br }}
+            </a>
+
+        {% endif %}
+
+
+
+        {% if pagination.has_next %}
+
+            <a
+                class="pagination-arrow"
+                href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), **{page_param: pagination.next_num})) }}"
+                aria-label="Próxima página"
+                title="Próxima página"
+            >
+{% if inline_icons %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>{% else %}›{% endif %}
+            </a>
+
+        {% else %}
+
+            <span
+                class="pagination-arrow disabled"
+                aria-label="Próxima página"
+                aria-disabled="true"
+                title="Próxima página"
+            >
+{% if inline_icons %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>{% else %}›{% endif %}
+            </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="pagination-info">Página {{ pagination.page | numero_br }} de {{ pagination.pages | numero_br }}</div>
+
+</nav>
+
+{% endif %}
+
+{% endmacro %}

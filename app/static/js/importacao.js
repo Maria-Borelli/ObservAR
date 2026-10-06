@@ -63,6 +63,23 @@
             "confirm-cancel"
         );
 
+    const dropzone = form.querySelector('.upload-dropzone');
+    const feedback = document.getElementById('arquivo-feedback');
+    function validFile() {
+        return input.files.length === 1 && /\.csv$/i.test(input.files[0].name);
+    }
+    function updateFileState(message = '') {
+        const file = input.files[0];
+        const valid = validFile();
+        fileName.textContent = file ? file.name : 'Nenhum arquivo selecionado.';
+        feedback.textContent = message || (file && !valid
+            ? 'Arquivo inválido. Selecione um arquivo com extensão .csv.'
+            : file ? 'Arquivo CSV selecionado. Pronto para iniciar a importação.' : '');
+        input.setAttribute('aria-invalid', String(Boolean(message || (file && !valid))));
+        dropzone.classList.toggle('has-file', valid);
+        dropzone.classList.toggle('is-invalid', Boolean(message || (file && !valid)));
+        submit.disabled = running || !valid || Boolean(message);
+    }
     let pollingTimer = null;
     let running = false;
 
@@ -85,7 +102,10 @@
 
         submit.disabled =
             busy
-            || !input.files.length;
+            || !validFile();
+        submit.textContent = busy ? 'Importando...' : 'Iniciar importação';
+        form.setAttribute('aria-busy', String(busy));
+        dropzone.classList.toggle('is-busy', busy);
 
         input.disabled =
             busy;
@@ -493,52 +513,54 @@
     );
 
 
-    input.addEventListener(
-        "change",
-        () => {
-            const file =
-                input.files[0];
-
-            if (!file) {
-                fileName.textContent =
-                    "Nenhum arquivo selecionado.";
-
-                submit.disabled =
-                    true;
-
-                return;
-            }
-
-            fileName.textContent =
-                file.name;
-
-            const valid =
-                file.name
-                .toLowerCase()
-                .endsWith(
-                    ".csv"
-                );
-
-            submit.disabled =
-                !valid;
-
-            if (!valid) {
-                showStatus(
-                    "Arquivo inválido.",
-                    "Selecione um arquivo com extensão .csv."
-                );
-            }
-
-            else {
-                hideStatus();
-
-                statusBox.classList.remove(
-                    "is-error"
-                );
-            }
+    input.addEventListener('change', () => {
+        if (!running) updateFileState();
+    });
+    function isFileDrag(event) {
+        return event.dataTransfer && Array.from(event.dataTransfer.types).includes('Files');
+    }
+    document.addEventListener('dragover', (event) => {
+        if (isFileDrag(event)) event.preventDefault();
+    });
+    document.addEventListener('drop', (event) => {
+        if (isFileDrag(event)) event.preventDefault();
+        dropzone.classList.remove('is-dragging');
+    });
+    dropzone.addEventListener('dragover', (event) => {
+        if (!isFileDrag(event)) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = running ? 'none' : 'copy';
+        if (!running) dropzone.classList.add('is-dragging');
+    });
+    dropzone.addEventListener('dragleave', (event) => {
+        if (!dropzone.contains(event.relatedTarget)) dropzone.classList.remove('is-dragging');
+    });
+    dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragging');
+        if (running) return;
+        const files = event.dataTransfer.files;
+        if (files.length !== 1) {
+            input.value = '';
+            updateFileState('Solte apenas um arquivo CSV por vez.');
+            return;
         }
-    );
-
+        try {
+            const transfer = new DataTransfer();
+            transfer.items.add(files[0]);
+            input.files = transfer.files;
+            if (!input.files[0] || input.files[0].name !== files[0].name) {
+                throw new Error('File assignment unavailable');
+            }
+            updateFileState();
+        } catch {
+            input.value = '';
+            updateFileState('Não foi possível selecionar por arraste. Clique na área para escolher o CSV.');
+        }
+    });
+    input.addEventListener('focus', () => dropzone.classList.add('is-focused'));
+    input.addEventListener('blur', () => dropzone.classList.remove('is-focused'));
+    updateFileState();
 
     form.addEventListener(
         "submit",
@@ -547,7 +569,8 @@
 
             if (
                 running
-                || !input.files.length
+                || !validFile()
+                || submit.disabled
             ) {
                 return;
             }

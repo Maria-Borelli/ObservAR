@@ -1,0 +1,51 @@
+﻿/* Estilos exclusivos da tela de importação. */
+.import-main-card h2, .import-history h2 { margin: 0 0 18px; font-size: 18px; color: var(--ink); }
+.import-main-card { min-width: 0; }
+.import-main-card .upload-dropzone {
+    min-height: 220px; padding: 28px 20px; gap: 10px;
+    border: 2px dashed #cbd5e1; background: #f8fafc; color: #1e5b43;
+    transition: border-color .3s ease-in-out, background-color .3s ease-in-out;
+}
+.import-main-card .upload-dropzone:hover,
+.import-main-card .upload-dropzone.is-dragging { border-color: #1e5b43; background: #eef8f3; }
+.import-main-card .upload-dropzone.is-dragging { box-shadow: 0 0 0 3px #1e5b4314; }
+.import-main-card .upload-icon, .import-main-card .upload-icon svg { width: 44px; height: 44px; color: #1e5b43; }
+.import-main-card .upload-instruction { font-size: 14px; color: #475569; }
+.import-main-card .upload-dropzone small { color: #475569; }
+.import-main-card .upload-dropzone.has-file { border-color: #1e5b43; }
+.import-main-card .upload-dropzone.is-invalid { border-color: #b91c1c; background: #fff5f5; }
+.import-main-card .upload-dropzone.is-busy { cursor: wait; }
+.import-main-card .upload-dropzone.is-focused,
+.import-main-card button:focus-visible,
+.import-history .table-responsive:focus-visible { outline: 2px solid #1e5b43; outline-offset: 3px; }
+.import-main-card .upload-file-name { font-size: 14px; color: #334155; overflow-wrap: anywhere; }
+.import-main-card .upload-feedback { margin: 0 0 14px; color: #1e5b43; font-size: 13px; overflow-wrap: anywhere; }
+.import-main-card .upload-feedback:empty { display: none; }
+.import-main-card:has(.upload-dropzone.is-invalid) .upload-feedback { color: #b91c1c; }
+.import-main-card .import-submit {
+    min-height: 44px; background: #1e5b43; color: #fff; cursor: pointer;
+    transition: background-color .3s ease-in-out, opacity .3s ease-in-out;
+}
+.import-main-card .import-submit:hover:not(:disabled) { background: #2a7a5a; }
+.import-main-card .import-submit:disabled { background: #94a99f; color: #172b22; opacity: .75; cursor: not-allowed; }
+/* Todas as colunas permanecem disponíveis em telas pequenas. */
+.import-history { min-width: 0; }
+.import-history .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.import-history table { width: 100%; min-width: 950px; }
+.import-history tbody tr { transition: background-color .3s ease-in-out; }
+.import-history tbody tr:hover { background: #f8fafc; }
+.import-history .numeric-column { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.import-history td:nth-child(2) { min-width: 180px; max-width: 320px; overflow-wrap: anywhere; white-space: normal; }
+.import-history .status-badge { padding: 5px 10px; font-size: 13px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.import-history .badge-sucesso { background: #dcfce7; color: #166534; }
+.import-history .badge-aviso { background: #fef3c7; color: #92400e; }
+.import-history .badge-erro { background: #fee2e2; color: #991b1b; }
+.import-history .badge-info { background: #dbeafe; color: #1e40af; }
+@media (max-width: 700px) {
+    .import-main-card .upload-dropzone { min-height: 200px; padding: 24px 14px; }
+    .import-main-card .import-status { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .import-main-card .upload-dropzone, .import-main-card .import-submit,
+    .import-history tbody tr { transition: none; }
+}

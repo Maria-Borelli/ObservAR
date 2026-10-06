@@ -1,6 +1,10 @@
 {% extends "base.html" %}
-{% from "components/pagination.html" import pager with context %}
+{% from "auditoria/pagination.html" import pager with context %}
 
+{% block title %}ObservAR | Auditoria{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auditoria.css') }}?v=1">
+{% endblock %}
 {% block crumb %}
 Auditoria
 {% endblock %}
@@ -24,47 +28,48 @@ Auditoria
 </div>
 
 
-<div class="grid2">
+<div class="grid2 audit-grid">
 
 
-    <div class="card table-card">
+    <section class="card table-card audit-section" aria-labelledby="audit-auth-title">
 
-        <h3>
+        <h2 id="audit-auth-title">
             Autenticação
-        </h3>
+        </h2>
 
 
         {{ pager(
             auth_pagination,
             auth_per_page,
             "auth_page",
-            "auth_per_page"
+            "auth_per_page",
+            label="Autenticação"
         ) }}
 
 
         {% if auth %}
 
-        <div class="table-responsive">
+        <div class="table-responsive audit-table-wrapper" tabindex="0" role="region" aria-labelledby="audit-auth-title">
 
-            <table>
+            <table aria-labelledby="audit-auth-title">
 
                 <thead>
 
                     <tr>
 
-                        <th>
+                        <th scope="col">
                             Quando
                         </th>
 
-                        <th>
+                        <th scope="col">
                             Identificador
                         </th>
 
-                        <th>
+                        <th scope="col">
                             Etapa
                         </th>
 
-                        <th>
+                        <th scope="col">
                             Resultado
                         </th>
 
@@ -92,11 +97,11 @@ Auditoria
                         </td>
 
                         <td>
-                            {{
+                            <span class="audit-badge {% if x.sucesso is sameas true %}badge-sucesso{% elif x.sucesso is sameas false %}badge-erro{% else %}badge-neutro{% endif %}">{{
                                 'Aprovado'
                                 if x.sucesso
                                 else 'Reprovado'
-                            }}
+                            }}</span>
                         </td>
 
                     </tr>
@@ -117,43 +122,44 @@ Auditoria
 
         {% endif %}
 
-    </div>
+    </section>
 
 
-    <div class="card table-card">
+    <section class="card table-card audit-section" aria-labelledby="audit-access-title">
 
-        <h3>
+        <h2 id="audit-access-title">
             Acessos
-        </h3>
+        </h2>
 
 
         {{ pager(
             access_pagination,
             access_per_page,
             "access_page",
-            "access_per_page"
+            "access_per_page",
+            label="Acessos"
         ) }}
 
 
         {% if access %}
 
-        <div class="table-responsive">
+        <div class="table-responsive audit-table-wrapper" tabindex="0" role="region" aria-labelledby="audit-access-title">
 
-            <table>
+            <table aria-labelledby="audit-access-title">
 
                 <thead>
 
                     <tr>
 
-                        <th>
+                        <th scope="col">
                             Quando
                         </th>
 
-                        <th>
+                        <th scope="col">
                             Rota
                         </th>
 
-                        <th>
+                        <th scope="col">
                             Resultado
                         </th>
 
@@ -177,11 +183,11 @@ Auditoria
                         </td>
 
                         <td>
-                            {{
+                            <span class="audit-badge {% if x.permitido is sameas true %}badge-sucesso{% elif x.permitido is sameas false %}badge-erro{% else %}badge-neutro{% endif %}">{{
                                 'Permitido'
                                 if x.permitido
                                 else 'Negado'
-                            }}
+                            }}</span>
                         </td>
 
                     </tr>
@@ -202,7 +208,7 @@ Auditoria
 
         {% endif %}
 
-    </div>
+    </section>
 
 </div>
 
