@@ -625,7 +625,7 @@ def _executar_importacao(
 
 
 @bp.get("")
-@require_level(3)
+@require_level(2)
 def index():
     historico = (
         HistoricoImportacao.query
@@ -658,7 +658,7 @@ def index():
 
 
 @bp.post("/iniciar")
-@require_level(3)
+@require_level(2)
 def iniciar():
     arquivo = request.files.get(
         "arquivo"
@@ -971,7 +971,7 @@ def iniciar():
 @bp.post(
     "/<int:importacao_id>/cancelar"
 )
-@require_level(3)
+@require_level(2)
 def cancelar(importacao_id):
     usuario = current_user()
 
@@ -1044,7 +1044,7 @@ def cancelar(importacao_id):
 @bp.get(
     "/<int:importacao_id>/status"
 )
-@require_level(3)
+@require_level(2)
 def status(importacao_id):
     item = db.session.get(
         HistoricoImportacao,
