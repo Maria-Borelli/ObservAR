@@ -2,9 +2,10 @@ from unittest.mock import patch
 from app.models import Usuario, BiometriaFacial, db
 def test_senha_incorreta(client): assert client.post("/login",data={"identifier":"u1","password":"bad"}).status_code==401
 def test_senha_valida_vai_biometria(client): assert client.post("/login",data={"identifier":"u1","password":"ok"}).status_code==302
-def test_sem_biometria(client):
-    client.post("/login",data={"identifier":"u1","password":"ok"})
-    assert client.post("/api/biometria/verificar",data={"image":"x"}).status_code==409
+def test_sem_biometria_vai_cadastrar(client):
+    # Usuário sem biometria ativa é encaminhado para cadastrá-la após a senha.
+    r=client.post("/login",data={"identifier":"u1","password":"ok"})
+    assert r.status_code==302 and "/cadastrar-biometria" in r.headers["Location"]
 def test_biometria_correta(app,client):
     with app.app_context():
         u=Usuario.query.filter_by(login="u1").one();db.session.add(BiometriaFacial(usuario_id=u.id,backend="face_recognition",template=b"x"));db.session.commit()

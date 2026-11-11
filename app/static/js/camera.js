@@ -121,7 +121,16 @@ async function run(button, url) {
         const video = await camera();
         stream = video.srcObject;
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        
+        const PREP_SECONDS = 3;
+        for (let restante = PREP_SECONDS; restante > 0; restante--) {
+            message.textContent =
+                "Posicione o rosto. Capturando em " + restante + "...";
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
 
         message.textContent = "Capturando o rosto...";
         const image = shot(video);

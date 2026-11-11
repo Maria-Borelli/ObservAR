@@ -10,7 +10,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=int(os.getenv("SESSION_MINUTES", "30")))
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    BIOMETRIC_BACKEND = os.getenv("BIOMETRIC_BACKEND", "face_recognition")
+    BIOMETRIC_BACKEND = os.getenv("BIOMETRIC_BACKEND", "opencv")
     BIOMETRIC_TOLERANCE = float(os.getenv("BIOMETRIC_TOLERANCE", "0.50"))
     DEMO_BIOMETRIC_MODE = os.getenv("DEMO_BIOMETRIC_MODE", "0") == "1"
 
