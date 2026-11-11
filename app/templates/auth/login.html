@@ -23,6 +23,7 @@
                 <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••">
                 <button class="primary"><span>Continuar</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
             </form>
+            <p class="muted" style="text-align:center;margin-top:16px">Não tem conta? <a href="{{ url_for('auth.registro') }}">Criar cadastro</a></p>
             <div class="security-note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg><div><strong>Autenticação em duas etapas</strong><span>Senha + reconhecimento facial para proteger seu acesso.</span></div></div>
         </section>
         <p class="login-foot">APS • Processamento de Imagem e Visão Computacional</p>

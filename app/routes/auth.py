@@ -14,6 +14,7 @@ from flask import (
 
 from app.models import (
     BiometriaFacial,
+    Perfil,
     Usuario,
     db,
 )
@@ -83,10 +84,6 @@ def login():
         )
 
     
-        session[
-            "pending_user_id"
-        ] = usuario.id
-
         auth_log(
             usuario.id,
             usuario.login,
@@ -94,6 +91,47 @@ def login():
             True,
             "Senha validada",
         )
+
+        # Usuário sem biometria ativa é encaminhado para cadastrá-la
+        # antes de concluir a autenticação.
+        tem_biometria = (
+            BiometriaFacial.query
+            .filter_by(
+                usuario_id=usuario.id,
+                ativa=True,
+            )
+            .first()
+        )
+
+        if not tem_biometria:
+            session["enroll_user_id"] = usuario.id
+
+            return redirect(
+                url_for("auth.cadastrar_biometria")
+            )
+
+        # Modo demonstração: pula a etapa de biometria e autentica direto.
+        if current_app.config.get("DEMO_BIOMETRIC_MODE"):
+            session["user_id"] = usuario.id
+            session.permanent = True
+
+            auth_log(
+                usuario.id,
+                usuario.login,
+                "biometria",
+                True,
+                "Etapa de biometria ignorada (modo demonstração)",
+            )
+
+            return redirect(
+                url_for(
+                    "main.dashboard"
+                )
+            )
+
+        session[
+            "pending_user_id"
+        ] = usuario.id
 
         return redirect(
             url_for(
@@ -104,6 +142,317 @@ def login():
     return render_template(
         "auth/login.html"
     )
+
+
+# Cadastro aberto de usuário
+#
+# Qualquer pessoa pode criar uma conta a qualquer momento. A conta é criada
+# com nível 1 (leitor). Após a criação, o usuário é encaminhado para
+# cadastrar a biometria facial.
+
+@bp.route(
+    "/registro",
+    methods=["GET", "POST"],
+)
+def registro():
+
+    if request.method == "POST":
+
+        nome = request.form.get(
+            "nome",
+            "",
+        ).strip()
+
+        login = request.form.get(
+            "login",
+            "",
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            "",
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            "",
+        )
+
+        confirmar = request.form.get(
+            "confirmar",
+            "",
+        )
+
+        erro = None
+
+        if not nome or not login or not password:
+            erro = (
+                "Preencha nome, usuário e senha."
+            )
+
+        elif len(password) < 8:
+            erro = (
+                "A senha deve ter ao menos "
+                "8 caracteres."
+            )
+
+        elif password != confirmar:
+            erro = (
+                "As senhas não conferem."
+            )
+
+        elif (
+            Usuario.query
+            .filter_by(login=login)
+            .first()
+        ):
+            erro = (
+                "Este usuário já está em uso."
+            )
+
+        elif email and (
+            Usuario.query
+            .filter_by(email=email)
+            .first()
+        ):
+            erro = (
+                "Este e-mail já está em uso."
+            )
+
+        if erro:
+            return render_template(
+                "auth/registro.html",
+                error=erro,
+                nome=nome,
+                login=login,
+                email=email,
+            ), 400
+
+        # Conta aberta: criada com nível 1 (leitor).
+        perfil = (
+            Perfil.query
+            .filter_by(nivel=1)
+            .first()
+        )
+
+        if not perfil:
+            perfil = Perfil(
+                nivel=1,
+                nome="Usuário geral",
+            )
+            db.session.add(perfil)
+            db.session.flush()
+
+        usuario = Usuario(
+            nome=nome,
+            login=login,
+            email=email or None,
+            perfil=perfil,
+            ativo=True,
+        )
+
+        usuario.set_password(password)
+
+        db.session.add(usuario)
+        db.session.commit()
+
+        auth_log(
+            usuario.id,
+            usuario.login,
+            "registro",
+            True,
+            "Usuário cadastrado (nível 1)",
+        )
+
+        # Autentica parcialmente e encaminha para o cadastro da facial.
+        session.clear()
+
+        session["_csrf"] = (
+            secrets.token_urlsafe(24)
+        )
+
+        session[
+            "enroll_user_id"
+        ] = usuario.id
+
+        return redirect(
+            url_for("auth.cadastrar_biometria")
+        )
+
+    return render_template(
+        "auth/registro.html"
+    )
+
+
+# Cadastro de biometria facial para o próprio usuário
+#
+# Fluxo de onboarding usado quando:
+#  - o usuário acabou de se cadastrar; ou
+#  - o usuário fez login com senha válida mas ainda não tem facial.
+# A sessão guarda `enroll_user_id`.
+
+@bp.route(
+    "/cadastrar-biometria"
+)
+def cadastrar_biometria():
+
+    uid = session.get(
+        "enroll_user_id"
+    )
+
+    if not uid:
+        return redirect(
+            url_for("auth.login")
+        )
+
+    usuario = Usuario.query.get(uid)
+
+    if not usuario:
+        session.clear()
+        return redirect(
+            url_for("auth.login")
+        )
+
+    # Se já tem biometria ativa, não precisa cadastrar de novo.
+    ja_tem = (
+        BiometriaFacial.query
+        .filter_by(
+            usuario_id=usuario.id,
+            ativa=True,
+        )
+        .first()
+    )
+
+    if ja_tem:
+        session.pop("enroll_user_id", None)
+        return redirect(
+            url_for("auth.login")
+        )
+
+    return render_template(
+        "auth/cadastrar_biometria.html",
+        usuario=usuario,
+    )
+
+
+# API de cadastro de biometria do próprio usuário
+
+@bp.post(
+    "/api/cadastrar-biometria"
+)
+def cadastrar_biometria_salvar():
+
+    uid = session.get(
+        "enroll_user_id"
+    )
+
+    if not uid:
+        return jsonify(
+            ok=False,
+            error=(
+                "Sessão de cadastro "
+                "biométrico expirada."
+            ),
+        ), 401
+
+    usuario = Usuario.query.get(uid)
+
+    if not usuario:
+        session.clear()
+        return jsonify(
+            ok=False,
+            error="Usuário não encontrado.",
+        ), 404
+
+    if not usuario.ativo:
+        session.clear()
+        return jsonify(
+            ok=False,
+            error="Conta de usuário inativa.",
+        ), 403
+
+    ja_tem = (
+        BiometriaFacial.query
+        .filter_by(
+            usuario_id=usuario.id,
+            ativa=True,
+        )
+        .first()
+    )
+
+    if ja_tem:
+        return jsonify(
+            ok=False,
+            error="Biometria já cadastrada.",
+        ), 409
+
+    image = request.form.get(
+        "image",
+        "",
+    )
+
+    if not image:
+        return jsonify(
+            ok=False,
+            error=(
+                "Nenhuma imagem facial "
+                "foi enviada."
+            ),
+        ), 400
+
+    try:
+        template = extract_template(
+            image,
+            current_app.config[
+                "BIOMETRIC_BACKEND"
+            ],
+        )
+
+    except BiometricError as erro:
+
+        auth_log(
+            usuario.id,
+            usuario.login,
+            "cadastro_biometria",
+            False,
+            str(erro),
+        )
+
+        return jsonify(
+            ok=False,
+            error=str(erro),
+        ), 422
+
+    biometria = BiometriaFacial(
+        usuario_id=usuario.id,
+        backend=current_app.config[
+            "BIOMETRIC_BACKEND"
+        ],
+        template=template,
+        ativa=True,
+    )
+
+    db.session.add(biometria)
+    db.session.commit()
+
+    auth_log(
+        usuario.id,
+        usuario.login,
+        "cadastro_biometria",
+        True,
+        "Biometria cadastrada pelo usuário",
+    )
+
+    # Conclui a autenticação: biometria recém-cadastrada vale como 2ª etapa.
+    session.pop("enroll_user_id", None)
+    session["user_id"] = usuario.id
+    session.permanent = True
+
+    return jsonify(
+        ok=True,
+        redirect=url_for("main.dashboard"),
+    )
+
 
 #Tela de autenticação facial
 
